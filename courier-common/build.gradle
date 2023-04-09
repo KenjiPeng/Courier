@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'io.kenji'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':courier-annotation')
+}
+
+test {
+    useJUnitPlatform()
+}
