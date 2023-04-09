@@ -1,4 +1,4 @@
-package com.kenji.courier.annotation;
+package io.kenji.courier.annotation;
 
 import org.springframework.stereotype.Component;
 

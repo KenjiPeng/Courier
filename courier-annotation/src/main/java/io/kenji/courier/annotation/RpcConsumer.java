@@ -1,4 +1,4 @@
-package com.kenji.courier.annotation;
+package io.kenji.courier.annotation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * @Date 2023/3/4
  **/
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Autowired
 public @interface RpcConsumer {
 
