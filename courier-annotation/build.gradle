@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-//    implementation 'io.netty:netty-all:${rootProject.nettyVersion}'
 }
 
 test {
