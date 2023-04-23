@@ -20,28 +20,37 @@ public class RpcProviderScanner extends ClassScanner {
     public static Map<String, Object> doScannerWithRpcProviderAnnotationFilterAndRegistryService(/*String host,int port,*/String scanPackage/*,RegistryService registryService*/) throws IOException {
         Map<String, Object> handlerMap = new ConcurrentHashMap<>();
         List<String> classNameList = getClassNameList(scanPackage);
-        if (classNameList == null || classNameList.isEmpty()) {
+        if (classNameList.size() < 0) {
             return handlerMap;
         }
-
-        classNameList.stream().forEach(className ->
-        {
+        classNameList.stream().forEach(className -> {
             try {
                 Class<?> clazz = Class.forName(className);
                 RpcProvider rpcProvider = clazz.getAnnotation(RpcProvider.class);
                 if (rpcProvider != null) {
-                    log.info("The class instance name annotated with the @RpcProvider annotation ===> " + clazz.getName());
-                    log.info("The flied info in @RpcProvider annotation: ");
-                    log.info("interfaceClass ===> " + rpcProvider.interfaceClass().getName());
-                    log.info("interfaceName ===> " + rpcProvider.interfaceName());
-                    log.info("version ===> " + rpcProvider.version());
-                    log.info("group ===> " + rpcProvider.group());
+                    //Use interfaceClass first, and then use interfaceClassName if interfaceClass is empty
+                    //TODO register provider meta info in register service
+                    String serviceName = getServiceName(rpcProvider);
+                    //key=serviceName+version+group, value = instance with @RpcProvider annotation
+                    handlerMap.put(serviceName.concat(rpcProvider.version()).concat(rpcProvider.group()),clazz.getDeclaredConstructor().newInstance());
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 log.error("Scan classes throws exception: {}", e);
             }
         });
         return handlerMap;
+    }
+
+    private static String getServiceName(RpcProvider rpcProvider) {
+        Class<?> interfaceClass = rpcProvider.interfaceClass();
+        if (interfaceClass == void.class) {
+            return rpcProvider.interfaceName();
+        }
+        String serviceName = interfaceClass.getName();
+        if (serviceName == null || serviceName.trim().isEmpty()) {
+            return rpcProvider.interfaceName();
+        }
+        return serviceName;
     }
 
 }

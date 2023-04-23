@@ -71,7 +71,7 @@ public class ClassScanner {
     }
 
     public static List<String> getClassNameList(String packageName) throws IOException {
-        ArrayList<String> classNameList = new ArrayList<>();
+        final List<String> classNameList = new ArrayList<>();
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
         while (dirs.hasMoreElements()) {
