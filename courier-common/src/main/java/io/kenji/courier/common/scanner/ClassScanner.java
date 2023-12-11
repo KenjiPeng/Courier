@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -32,23 +30,23 @@ public class ClassScanner {
      */
     private static final String CLASS_FILE_SUFFIX = ".class";
 
-    private static void findAndClassesInPackageByFile(String packageName, String packagePath, List<String> classNameList) {
+    private static void findAndAddClassesInPackageByFile(String packageName, String packagePath, List<String> classNameList, final boolean recursive) {
         File dir = new File(packagePath);
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
-        File[] dirFiles = dir.listFiles(file -> (file.isDirectory() || file.getName().endsWith(".class")));
-        Arrays.stream(dirFiles).forEach(file -> {
+        File[] dirFiles = dir.listFiles(file -> ((recursive && file.isDirectory()) || file.getName().endsWith(".class")));
+        Optional.ofNullable(dirFiles).ifPresent(files -> Arrays.stream(files).forEach(file -> {
             if (file.isDirectory()) {
-                findAndClassesInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classNameList);
+                findAndAddClassesInPackageByFile(packageName + "." + file.getName(), file.getAbsolutePath(), classNameList, recursive);
             } else {
                 String className = file.getName().substring(0, file.getName().length() - 6);
                 classNameList.add(packageName + "." + className);
             }
-        });
+        }));
     }
 
-    private static void findAndAddClassesInPackageByJar(List<String> classNameList, String packageDirName, URL url) throws IOException {
+    private static void findAndAddClassesInPackageByJar(String packageName, List<String> classNameList, boolean recursive, String packageDirName, URL url) throws IOException {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
@@ -60,7 +58,9 @@ public class ClassScanner {
             if (name.startsWith(packageDirName)) {
                 int idx = name.lastIndexOf('/');
                 if (idx != -1) {
-                    String packageName = name.substring(0, idx).replace('/', '.');
+                    packageName = name.substring(0, idx).replace('/', '.');
+                }
+                if ((idx != -1) || recursive) {
                     if (name.endsWith(CLASS_FILE_SUFFIX) && !entry.isDirectory()) {
                         String className = name.substring(packageName.length() + 1, name.length() - 6);
                         classNameList.add(packageName + "." + className);
@@ -71,17 +71,18 @@ public class ClassScanner {
     }
 
     public static List<String> getClassNameList(String packageName) throws IOException {
-        final List<String> classNameList = new ArrayList<>();
+        List<String> classNameList = new ArrayList<>();
+        boolean recursive = true;
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
         while (dirs.hasMoreElements()) {
             URL url = dirs.nextElement();
             String protocol = url.getProtocol();
             if (PROTOCOL_FILE.equals(protocol)) {
-                String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
-                findAndClassesInPackageByFile(packageName, filePath, classNameList);
+                String filePath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8);
+                findAndAddClassesInPackageByFile(packageName, filePath, classNameList, recursive);
             } else if (PROTOCOL_JAR.equals(protocol)) {
-                findAndAddClassesInPackageByJar(classNameList, packageDirName, url);
+                findAndAddClassesInPackageByJar(packageName, classNameList, recursive, packageDirName, url);
             }
         }
         return classNameList;

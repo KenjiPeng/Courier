@@ -28,9 +28,8 @@ public enum RpcType {
         this.type = type;
     }
 
-    public static RpcType findByType(int type) {
-        Optional<RpcType> rpcType = Arrays.stream(RpcType.values()).filter(rpcT -> rpcT.type == type).findAny();
-        return rpcType.orElse(null);
+    public static Optional<RpcType> findByType(int type) {
+        return Arrays.stream(RpcType.values()).filter(rpcT -> rpcT.type == type).findAny();
     }
 
     public int getType() {

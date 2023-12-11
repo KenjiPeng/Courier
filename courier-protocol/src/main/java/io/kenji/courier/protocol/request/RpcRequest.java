@@ -1,19 +1,21 @@
 package io.kenji.courier.protocol.request;
 
 import io.kenji.courier.protocol.base.RpcMessage;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 /**
  * @Author Kenji Peng
  * @Description
  * @Date 2023/4/23
  **/
+@Data
+@EqualsAndHashCode(callSuper=true)
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RpcRequest extends RpcMessage {
 
     @Serial

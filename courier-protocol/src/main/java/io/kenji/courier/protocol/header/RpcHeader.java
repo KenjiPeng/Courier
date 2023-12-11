@@ -1,5 +1,6 @@
 package io.kenji.courier.protocol.header;
 
+import io.kenji.courier.annotation.SerializationType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
  * @Description
  * @Date 2023/4/23
  **/
+@Data
 @Builder
 public class RpcHeader implements Serializable {
     @Serial
@@ -39,7 +41,7 @@ public class RpcHeader implements Serializable {
     /**
      * serialization type 16 bytes. Less than 16 bytes followed by a 0, the convention is that the length of the serialized type cannot exceed 16
      */
-    private String serializationType;
+    private SerializationType serializationType;
 
     /**
      * message length 4 bytes

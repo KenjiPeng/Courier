@@ -1,8 +1,10 @@
 package io.kenji.courier.common.scanner.provider;
 
 import io.kenji.courier.annotation.RpcProvider;
+import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.scanner.ClassScanner;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,10 +22,10 @@ public class RpcProviderScanner extends ClassScanner {
     public static Map<String, Object> doScannerWithRpcProviderAnnotationFilterAndRegistryService(/*String host,int port,*/String scanPackage/*,RegistryService registryService*/) throws IOException {
         Map<String, Object> handlerMap = new ConcurrentHashMap<>();
         List<String> classNameList = getClassNameList(scanPackage);
-        if (classNameList.size() < 0) {
+        if (classNameList == null || classNameList.size() == 0) {
             return handlerMap;
         }
-        classNameList.stream().forEach(className -> {
+        classNameList.forEach(className -> {
             try {
                 Class<?> clazz = Class.forName(className);
                 RpcProvider rpcProvider = clazz.getAnnotation(RpcProvider.class);
@@ -32,10 +34,10 @@ public class RpcProviderScanner extends ClassScanner {
                     //TODO register provider meta info in register service
                     String serviceName = getServiceName(rpcProvider);
                     //key=serviceName+version+group, value = instance with @RpcProvider annotation
-                    handlerMap.put(serviceName.concat(rpcProvider.version()).concat(rpcProvider.group()),clazz.getDeclaredConstructor().newInstance());
+                    handlerMap.put(RpcServiceHelper.buildServiceKey(serviceName, rpcProvider.version(), rpcProvider.group()), clazz.getDeclaredConstructor().newInstance());
                 }
             } catch (Exception e) {
-                log.error("Scan classes throws exception: {}", e);
+                log.error("Scan classes throws exception", e);
             }
         });
         return handlerMap;
@@ -47,7 +49,7 @@ public class RpcProviderScanner extends ClassScanner {
             return rpcProvider.interfaceName();
         }
         String serviceName = interfaceClass.getName();
-        if (serviceName == null || serviceName.trim().isEmpty()) {
+        if (StringUtils.isBlank(serviceName)) {
             return rpcProvider.interfaceName();
         }
         return serviceName;

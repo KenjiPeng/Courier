@@ -1,6 +1,6 @@
 package io.kenji.courier.protocol.base;
 
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
@@ -11,7 +11,10 @@ import java.io.Serializable;
  * @Description
  * @Date 2023/4/23
  **/
+@Data
 @SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RpcMessage implements Serializable {
     @Serial
     private static final long serialVersionUID = -4492154800128245592L;

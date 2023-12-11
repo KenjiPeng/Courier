@@ -28,4 +28,5 @@ public class ScannerTest {
     public void testScannerClassNameListByRpcConsumer() throws IOException {
         RpcConsumerScanner.doScannerWithRpcConsumerAnnotationFilter("io.kenji.courier.test.scanner");
     }
+
 }

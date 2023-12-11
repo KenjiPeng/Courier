@@ -12,6 +12,7 @@ import java.io.Serializable;
  * @Description
  * @Date 2023/4/23
  **/
+@Data
 @Builder
 public class RpcProtocol<T> implements Serializable {
     @Serial

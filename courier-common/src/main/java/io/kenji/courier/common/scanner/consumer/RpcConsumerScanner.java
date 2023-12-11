@@ -1,7 +1,6 @@
 package io.kenji.courier.common.scanner.consumer;
 
 import io.kenji.courier.annotation.RpcConsumer;
-import io.kenji.courier.annotation.RpcProvider;
 import io.kenji.courier.common.scanner.ClassScanner;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,10 +23,10 @@ public class RpcConsumerScanner extends ClassScanner {
     public static Map<String, Object> doScannerWithRpcConsumerAnnotationFilter(/*String host,int port,*/String scanPackage/*,RegistryService registryService*/) throws IOException {
         Map<String, Object> handlerMap = new ConcurrentHashMap<>();
         List<String> classNameList = getClassNameList(scanPackage);
-        if (classNameList.size() < 0) {
+        if (classNameList == null || classNameList.size() == 0) {
             return handlerMap;
         }
-        classNameList.stream().forEach(className -> {
+        classNameList.forEach(className -> {
             try {
                 Class<?> clazz = Class.forName(className);
                 Field[] declaredFields = clazz.getDeclaredFields();
@@ -44,7 +43,7 @@ public class RpcConsumerScanner extends ClassScanner {
                     }
                 });
             } catch (ClassNotFoundException e) {
-                log.error("Scan classes throws exception: {}", e);
+                log.error("Scan classes throws exception.", e);
             }
         });
         return handlerMap;

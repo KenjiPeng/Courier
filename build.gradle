@@ -30,10 +30,6 @@ allprojects {
         annotationProcessor 'org.projectlombok:lombok:1.18.26'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
         testImplementation 'junit:junit:4.13.2'
-
-
-
-
-
+        implementation 'com.google.code.gson:gson:2.10.1'
     }
 }

@@ -1,7 +1,6 @@
 package io.kenji.courier.annotation;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,7 +25,7 @@ public @interface RpcConsumer {
     /**
      * Type of register including zookeeper, nacos, etcd, consul
      */
-    String registerType() default "zookeeper";
+    RegisterType registerType() default RegisterType.ZOOKEEPER;
 
     /**
      * Register Address
@@ -41,7 +40,7 @@ public @interface RpcConsumer {
     /**
      * Type of serialization including protostuff, kryo, json, jdk, hessian2, fst
      */
-    String serializationType() default "protostuff";
+    SerializationType serializationType() default SerializationType.PROTOSTUFF;
 
     /**
      * Timeout, 5s by default
@@ -64,7 +63,7 @@ public @interface RpcConsumer {
      * javassist: javassist proxy
      * cglib: cglib proxy
      */
-    String proxy() default "jdk";
+    Proxy proxy() default Proxy.JDK;
 
     /**
      * Service group
