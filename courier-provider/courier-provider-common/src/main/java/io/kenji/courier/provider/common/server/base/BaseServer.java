@@ -1,9 +1,10 @@
 package io.kenji.courier.provider.common.server.base;
 
+import io.kenji.courier.annotation.Proxy;
 import io.kenji.courier.provider.common.handler.RpcProviderHandler;
 import io.kenji.courier.provider.common.server.api.Server;
-import io.kenji.io.kenji.courier.codec.RpcDecoder;
-import io.kenji.io.kenji.courier.codec.RpcEncoder;
+import io.kenji.courier.codec.RpcDecoder;
+import io.kenji.courier.codec.RpcEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -31,7 +32,9 @@ public class BaseServer implements Server {
 
     protected Map<String, Object> handlerMap = new HashMap<>();
 
-    public BaseServer(String serverAddress) {
+    protected final Proxy proxy;
+    public BaseServer(String serverAddress, Proxy proxy) {
+        this.proxy = proxy;
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
@@ -54,7 +57,7 @@ public class BaseServer implements Server {
                                     //TODO implement custom protocol
                                     .addLast(new RpcDecoder())
                                     .addLast(new RpcEncoder())
-                                    .addLast(new RpcProviderHandler(handlerMap));
+                                    .addLast(new RpcProviderHandler(handlerMap, proxy));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

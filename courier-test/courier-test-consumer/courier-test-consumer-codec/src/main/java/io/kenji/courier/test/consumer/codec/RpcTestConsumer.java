@@ -23,7 +23,7 @@ public class RpcTestConsumer {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }finally {
-            Thread.sleep(2000);
+            Thread.sleep(1000000);
             eventLoopGroup.shutdownGracefully();
         }
     }

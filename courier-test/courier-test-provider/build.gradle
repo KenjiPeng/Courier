@@ -16,6 +16,8 @@ dependencies {
     implementation project(':courier-annotation')
     implementation project(':courier-provider:courier-provider-native')
     implementation project(':courier-provider:courier-provider-common')
+    implementation project(':courier-test:courier-test-api')
+
 }
 
 test {

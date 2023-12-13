@@ -1,5 +1,6 @@
 package io.kenji.courier.provider.common.handler;
 
+import io.kenji.courier.annotation.Proxy;
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.threadpool.ServerThreadPool;
 import io.kenji.courier.protocol.RpcProtocol;
@@ -12,6 +13,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.cglib.reflect.FastClass;
+import net.sf.cglib.reflect.FastMethod;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -26,9 +29,11 @@ import java.util.Optional;
 public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<RpcRequest>> {
 
     private final Map<String, Object> handlerMap;
+    private final Proxy proxy;
 
-    public RpcProviderHandler(Map<String, Object> handlerMap) {
+    public RpcProviderHandler(Map<String, Object> handlerMap, Proxy proxy) {
         this.handlerMap = handlerMap;
+        this.proxy = proxy;
     }
 
     @Override
@@ -76,7 +81,24 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     }
 
     private Object invokeMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
+        return switch (proxy) {
+            case JDK -> invokeJDKMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
+            case CGLIB -> invokeCGLIBMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
+            default -> throw new UnsupportedOperationException("Only support invoke method by JDK or CGLIB");
+        };
+    }
+
+    private Object invokeJDKMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
+        log.info("Use JDK reflect type invoke method");
         Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
+        method.setAccessible(true);
         return method.invoke(serviceBean, parameters);
+    }
+
+    private Object invokeCGLIBMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
+        log.info("Use CGLIB reflect type invoke method");
+        FastClass fastClass = FastClass.create(serviceBeanClass);
+        FastMethod fastClassMethod = fastClass.getMethod(methodName, parameterTypes);
+        return fastClassMethod.invoke(serviceBean, parameters);
     }
 }

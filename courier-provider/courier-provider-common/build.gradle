@@ -15,6 +15,7 @@ dependencies {
     implementation project(':courier-codec')
     implementation project(':courier-protocol')
     implementation project(':courier-common')
+    implementation project(':courier-annotation')
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
 }
