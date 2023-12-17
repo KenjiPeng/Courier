@@ -2,6 +2,10 @@ package io.kenji.courier.consumer;
 
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.consumer.common.RpcConsumer;
+import io.kenji.courier.proxy.api.ProxyFactory;
+import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
+import io.kenji.courier.proxy.api.config.ProxyConfig;
+import io.kenji.courier.proxy.api.object.ObjectProxy;
 import io.kenji.courier.proxy.jdk.JdkProxyFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,16 +27,21 @@ public class RpcClient<T> {
 
     private SerializationType serializationType;
 
-    private boolean async;
+    private Boolean async;
 
-    private boolean oneway;
+    private Boolean oneway;
 
-    public <T> T create(Class<T> interfaceClass){
-        JdkProxyFactory<T> jdkProxyFactory = new JdkProxyFactory<>(serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway);
-        return jdkProxyFactory.getProxy(interfaceClass);
+    public <T> T create(Class<T> interfaceClass) {
+        ProxyFactory proxyFactory = new JdkProxyFactory<>();
+        proxyFactory.init(new ProxyConfig<>(interfaceClass,serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway));
+        return proxyFactory.getProxy(interfaceClass);
     }
 
-    public void shutdown(){
+    public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
+        return new ObjectProxy<T>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway);
+    }
+
+    public void shutdown() {
         RpcConsumer.getInstance().close();
     }
 }

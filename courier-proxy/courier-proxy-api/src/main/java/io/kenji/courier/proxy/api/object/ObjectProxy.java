@@ -1,11 +1,13 @@
 package io.kenji.courier.proxy.api.object;
 
 import io.kenji.courier.annotation.SerializationType;
+import io.kenji.courier.consumer.common.consumer.Consumer;
+import io.kenji.courier.consumer.common.context.RpcContext;
+import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
-import io.kenji.courier.proxy.api.consumer.Consumer;
-import io.kenji.courier.proxy.api.future.RpcFuture;
+import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Slf4j
 @AllArgsConstructor
-public class ObjectProxy<T> implements InvocationHandler {
+public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     /**
      * The Class of interface
@@ -41,9 +43,9 @@ public class ObjectProxy<T> implements InvocationHandler {
 
     private SerializationType serializationType;
 
-    private boolean async;
+    private Boolean async;
 
-    private boolean oneway;
+    private Boolean oneway;
 
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
@@ -89,5 +91,46 @@ public class ObjectProxy<T> implements InvocationHandler {
         }
         RpcFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol);
         return rpcFuture == null ? null : timeout > 0 ? rpcFuture.get(timeout, TimeUnit.MILLISECONDS).getResult() : rpcFuture.get().getResult();
+    }
+
+    @Override
+    public RpcFuture call(String funcName, Object... args) {
+        RpcProtocol<RpcRequest> request = createRequest(this.clazz.getName(), funcName, args);
+        RpcFuture rpcFuture = null;
+        try {
+            this.consumer.sendRequest(request);
+            rpcFuture = RpcContext.getContext().getRpcFuture();
+        } catch (Exception e) {
+            log.error("Hit error during rpc consumer sends request asynchronously", e);
+        }
+        return rpcFuture;
+    }
+
+    private RpcProtocol<RpcRequest> createRequest(String className, String funcName, Object... args) {
+        var parameterTypes = Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);
+        RpcRequest rpcRequest = RpcRequest.builder()
+                .version(this.serviceVersion)
+                .className(className)
+                .methodName(funcName)
+                .parameterTypes(parameterTypes)
+                .group(this.serviceGroup)
+                .parameters(args)
+                .async(async)
+                .oneway(oneway)
+                .build();
+        log.debug("Class name in object proxy: {}", className);
+        log.debug("Method name in object proxy: {}", funcName);
+        if (parameterTypes.length > 0) {
+            List<String> paramTypeList = Arrays.stream(parameterTypes).map(Class::getName).toList();
+            log.debug("Parameter types name in object proxy: {}", String.join(",", paramTypeList));
+        }
+        if (args.length > 0) {
+            List<String> argList = Arrays.stream(args).map(Object::toString).toList();
+            log.debug("Args in object proxy: {}", String.join(",", argList));
+        }
+        return RpcProtocol.<RpcRequest>builder()
+                .header(RpcHeaderFactory.getRequestHeader(serializationType))
+                .body(rpcRequest)
+                .build();
     }
 }

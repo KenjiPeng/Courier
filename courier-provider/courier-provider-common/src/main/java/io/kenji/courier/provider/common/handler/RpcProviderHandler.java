@@ -44,8 +44,8 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
             RpcRequest requestBody = protocol.getBody();
             log.debug("Received request, requestId: {}, body: {}", header.getRequestId(), requestBody);
             RpcResponse rpcResponse = new RpcResponse();
-            rpcResponse.setAsync(requestBody.isAsync());
-            rpcResponse.setOneway(requestBody.isOneway());
+            rpcResponse.setAsync(requestBody.getAsync());
+            rpcResponse.setOneway(requestBody.getOneway());
             try {
                 Object result = handle(requestBody);
                 header.setStatus((byte) RpcStatus.SUCCESS.getCode());

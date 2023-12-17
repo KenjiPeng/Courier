@@ -1,4 +1,4 @@
-package io.kenji.courier.proxy.api.callback;
+package io.kenji.courier.consumer.common.callback;
 
 import io.kenji.courier.protocol.response.RpcResponse;
 

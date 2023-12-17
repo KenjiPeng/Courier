@@ -1,12 +1,12 @@
 package io.kenji.courier.consumer.common;
 
 import io.kenji.courier.common.threadpool.ClientThreadPool;
+import io.kenji.courier.consumer.common.consumer.Consumer;
+import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
 import io.kenji.courier.consumer.common.initializer.RpcConsumerInitializer;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.request.RpcRequest;
-import io.kenji.courier.proxy.api.consumer.Consumer;
-import io.kenji.courier.proxy.api.future.RpcFuture;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -68,7 +68,7 @@ public class RpcConsumer implements Consumer {
             handlerMap.put(key, handler);
         }
         RpcRequest rpcRequest = protocol.getBody();
-        return handler.sendRequest(protocol, rpcRequest.isAsync(), rpcRequest.isOneway());
+        return handler.sendRequest(protocol, rpcRequest.getAsync(), rpcRequest.getOneway());
     }
 
     private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port, String key) throws InterruptedException {

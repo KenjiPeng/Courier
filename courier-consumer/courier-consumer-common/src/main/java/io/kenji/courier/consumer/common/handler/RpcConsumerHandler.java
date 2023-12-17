@@ -2,11 +2,11 @@ package io.kenji.courier.consumer.common.handler;
 
 import io.kenji.courier.common.utils.GsonUtil;
 import io.kenji.courier.consumer.common.context.RpcContext;
+import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeader;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
-import io.kenji.courier.proxy.api.future.RpcFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -62,19 +62,19 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         this.channel = ctx.channel();
     }
 
-    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol, boolean async, boolean oneway) {
+    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol, Boolean async, boolean oneway) {
         log.info("Rpc consumer is going to send data, data: {}", GsonUtil.getGson().toJson(protocol));
-        return oneway ? sendRequestOneway(protocol) : async ? sendRequestASync(protocol) : sendRequestSync(protocol);
+        return oneway ? sendRequestOneway(protocol) : async ? sendRequestAsync(protocol) : sendRequestSync(protocol);
     }
 
-    public RpcFuture sendRequestSync(RpcProtocol<RpcRequest> protocol) {
+    private RpcFuture sendRequestSync(RpcProtocol<RpcRequest> protocol) {
         log.info("Rpc consumer is going to send data synchronously, data: {}", GsonUtil.getGson().toJson(protocol));
         RpcFuture rpcFuture = this.getRpcFuture(protocol);
         channel.writeAndFlush(protocol);
         return rpcFuture;
     }
 
-    public RpcFuture sendRequestASync(RpcProtocol<RpcRequest> protocol) {
+    private RpcFuture sendRequestAsync(RpcProtocol<RpcRequest> protocol) {
         log.info("Rpc consumer is going to send data asynchronously, data: {}", GsonUtil.getGson().toJson(protocol));
         RpcFuture rpcFuture = this.getRpcFuture(protocol);
         RpcContext.getContext().setRpcFuture(rpcFuture);
@@ -82,7 +82,7 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         return null;
     }
 
-    public RpcFuture sendRequestOneway(RpcProtocol<RpcRequest> protocol) {
+    private RpcFuture sendRequestOneway(RpcProtocol<RpcRequest> protocol) {
         log.info("Rpc consumer is going to send data on one way, data: {}", GsonUtil.getGson().toJson(protocol));
         channel.writeAndFlush(protocol);
         return null;

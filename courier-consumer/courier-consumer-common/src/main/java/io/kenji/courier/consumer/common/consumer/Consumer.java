@@ -1,8 +1,8 @@
-package io.kenji.courier.proxy.api.consumer;
+package io.kenji.courier.consumer.common.consumer;
 
+import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.request.RpcRequest;
-import io.kenji.courier.proxy.api.future.RpcFuture;
 
 /**
  * @Author Kenji Peng

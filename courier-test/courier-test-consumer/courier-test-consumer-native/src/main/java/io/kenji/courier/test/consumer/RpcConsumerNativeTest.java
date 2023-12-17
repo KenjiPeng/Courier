@@ -20,4 +20,14 @@ public class RpcConsumerNativeTest {
         log.info("Got result: {}",result);
         rpcClient.shutdown();
     }
+
+//    @Test
+//    public void testAsyncInterfaceRpc() throws Exception {
+//        RpcClient<Object> rpcClient = new RpcClient<>("1.0.0", "Kenji", 3000, SerializationType.JDK, true, false);
+//        IAsyncObjectProxy demoService = rpcClient.createAsync(DemoService.class);
+//        RpcFuture rpcFuture = demoService.call("hello", "Kenji haha");
+//        Object result = rpcFuture.get().getResult();
+//        log.info("Got result: {}",result);
+//        rpcClient.shutdown();
+//    }
 }

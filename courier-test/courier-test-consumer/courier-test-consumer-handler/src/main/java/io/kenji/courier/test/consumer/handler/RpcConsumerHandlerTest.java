@@ -2,12 +2,12 @@ package io.kenji.courier.test.consumer.handler;
 
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.consumer.common.RpcConsumer;
+import io.kenji.courier.consumer.common.callback.AsyncRpcCallback;
+import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
-import io.kenji.courier.proxy.api.callback.AsyncRpcCallback;
-import io.kenji.courier.proxy.api.future.RpcFuture;
 import lombok.extern.slf4j.Slf4j;
 
 /**

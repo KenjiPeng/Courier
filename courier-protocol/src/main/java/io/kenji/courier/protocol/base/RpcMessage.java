@@ -1,6 +1,8 @@
 package io.kenji.courier.protocol.base;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
@@ -21,9 +23,9 @@ public class RpcMessage implements Serializable {
     /**
      * Whether to send one-way
      */
-    private boolean oneway;
+    private Boolean oneway;
     /**
      * Asynchronous call or not
      */
-    private boolean async;
+    private Boolean async;
 }

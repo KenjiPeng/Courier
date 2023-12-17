@@ -15,6 +15,7 @@ dependencies {
     implementation project(':courier-protocol')
     implementation project(':courier-common')
     implementation project(':courier-annotation')
+    implementation project(':courier-consumer:courier-consumer-common')
 }
 
 test {

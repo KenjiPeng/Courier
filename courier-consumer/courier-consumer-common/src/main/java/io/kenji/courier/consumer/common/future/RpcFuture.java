@@ -1,11 +1,11 @@
-package io.kenji.courier.proxy.api.future;
+package io.kenji.courier.consumer.common.future;
 
 import io.kenji.courier.common.threadpool.ClientThreadPool;
+import io.kenji.courier.consumer.common.callback.AsyncRpcCallback;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.enumeration.RpcStatus;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
-import io.kenji.courier.proxy.api.callback.AsyncRpcCallback;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serial;
