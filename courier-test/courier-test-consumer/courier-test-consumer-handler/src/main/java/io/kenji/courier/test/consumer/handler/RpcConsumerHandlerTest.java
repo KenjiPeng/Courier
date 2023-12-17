@@ -6,6 +6,8 @@ import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
+import io.kenji.courier.proxy.api.callback.AsyncRpcCallback;
+import io.kenji.courier.proxy.api.future.RpcFuture;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,8 +20,19 @@ public class RpcConsumerHandlerTest {
 
     public static void main(String[] args) throws Exception {
         RpcConsumer rpcConsumer = RpcConsumer.getInstance();
-        RpcResponse response = rpcConsumer.sendRequest(getRpcRequestProtocol());
-        log.info("Received response: {}", response.getResult());
+        RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol());
+        rpcFuture.addCallback(new AsyncRpcCallback() {
+            @Override
+            public void onSuccess(RpcResponse response) {
+                log.info("Callback on success, received response: {}",response);
+            }
+
+            @Override
+            public void onException(Exception e) {
+                log.error("Callback on exception",e);
+            }
+        });
+        Thread.sleep(200);
         rpcConsumer.close();
     }
 
@@ -27,7 +40,7 @@ public class RpcConsumerHandlerTest {
         RpcRequest rpcRequest = RpcRequest.builder()
                 .className("io.kenji.courier.test.api.DemoService")
                 .group("Kenji")
-                .methodName("hello")
+                .methodName("hello1")
                 .parameters(new Object[]{"Kenji"})
                 .parameterTypes(new Class[]{String.class})
                 .version("1.0.0")

@@ -1,9 +1,12 @@
 package io.kenji.courier.consumer.common.handler;
 
 import io.kenji.courier.common.utils.GsonUtil;
+import io.kenji.courier.consumer.common.context.RpcContext;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.header.RpcHeader;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
+import io.kenji.courier.proxy.api.future.RpcFuture;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -25,7 +28,9 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     private volatile Channel channel;
     private SocketAddress remotePeer;
 
-    private Map<Long, RpcProtocol<RpcResponse>> pendingMsg = new ConcurrentHashMap<>();
+    private final Map<Long, RpcProtocol<RpcResponse>> pendingMsg = new ConcurrentHashMap<>();
+
+    private final Map<Long, RpcFuture> pendingRpc = new ConcurrentHashMap<>();
 
     public Channel getChannel() {
         return channel;
@@ -39,7 +44,10 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcResponse> msg) throws Exception {
         if (msg == null) return;
         log.info("Rpc consumer received data, data: {}", GsonUtil.getGson().toJson(msg));
-        pendingMsg.put(msg.getHeader().getRequestId(), msg);
+        RpcFuture rpcFuture = pendingRpc.remove(msg.getHeader().getRequestId());
+        if (rpcFuture != null) {
+            rpcFuture.done(msg);
+        }
     }
 
     @Override
@@ -54,15 +62,38 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
         this.channel = ctx.channel();
     }
 
-    public RpcResponse sendRequest(RpcProtocol<RpcRequest> protocol) {
+    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol, boolean async, boolean oneway) {
         log.info("Rpc consumer is going to send data, data: {}", GsonUtil.getGson().toJson(protocol));
+        return oneway ? sendRequestOneway(protocol) : async ? sendRequestASync(protocol) : sendRequestSync(protocol);
+    }
+
+    public RpcFuture sendRequestSync(RpcProtocol<RpcRequest> protocol) {
+        log.info("Rpc consumer is going to send data synchronously, data: {}", GsonUtil.getGson().toJson(protocol));
+        RpcFuture rpcFuture = this.getRpcFuture(protocol);
         channel.writeAndFlush(protocol);
-        while (true){
-            long requestId = protocol.getHeader().getRequestId();
-            if (pendingMsg.get(requestId)!=null){
-                return pendingMsg.remove(requestId).getBody();
-            }
-        }
+        return rpcFuture;
+    }
+
+    public RpcFuture sendRequestASync(RpcProtocol<RpcRequest> protocol) {
+        log.info("Rpc consumer is going to send data asynchronously, data: {}", GsonUtil.getGson().toJson(protocol));
+        RpcFuture rpcFuture = this.getRpcFuture(protocol);
+        RpcContext.getContext().setRpcFuture(rpcFuture);
+        channel.writeAndFlush(protocol);
+        return null;
+    }
+
+    public RpcFuture sendRequestOneway(RpcProtocol<RpcRequest> protocol) {
+        log.info("Rpc consumer is going to send data on one way, data: {}", GsonUtil.getGson().toJson(protocol));
+        channel.writeAndFlush(protocol);
+        return null;
+    }
+
+    private RpcFuture getRpcFuture(RpcProtocol<RpcRequest> protocol) {
+        RpcFuture rpcFuture = new RpcFuture(protocol);
+        RpcHeader header = protocol.getHeader();
+        long requestId = header.getRequestId();
+        pendingRpc.put(requestId, rpcFuture);
+        return rpcFuture;
     }
 
     public void close() {

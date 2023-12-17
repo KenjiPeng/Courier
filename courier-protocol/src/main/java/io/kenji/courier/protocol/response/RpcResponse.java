@@ -1,7 +1,10 @@
 package io.kenji.courier.protocol.response;
 
 import io.kenji.courier.protocol.base.RpcMessage;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
@@ -23,4 +26,5 @@ public class RpcResponse extends RpcMessage {
     private String error;
 
     private Object result;
+
 }

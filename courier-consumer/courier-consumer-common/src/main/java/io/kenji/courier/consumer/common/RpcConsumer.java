@@ -1,10 +1,12 @@
 package io.kenji.courier.consumer.common;
 
+import io.kenji.courier.common.threadpool.ClientThreadPool;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
 import io.kenji.courier.consumer.common.initializer.RpcConsumerInitializer;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.request.RpcRequest;
-import io.kenji.courier.protocol.response.RpcResponse;
+import io.kenji.courier.proxy.api.consumer.Consumer;
+import io.kenji.courier.proxy.api.future.RpcFuture;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -21,13 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Date 2023-12-13
  **/
 @Slf4j
-public class RpcConsumer {
+public class RpcConsumer implements Consumer {
     private final Bootstrap bootstrap;
     private final EventLoopGroup eventLoopGroup;
 
     private static volatile RpcConsumer instance;
 
-    private static Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
+    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
 
     private RpcConsumer() {
         this.bootstrap = new Bootstrap();
@@ -49,9 +51,11 @@ public class RpcConsumer {
 
     public void close() {
         eventLoopGroup.shutdownGracefully();
+        ClientThreadPool.shutdown();
     }
 
-    public RpcResponse sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
+    @Override
+    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
         String serviceAddress = "127.0.0.1";
         int port = 27880;
         String key = serviceAddress.concat("_").concat(String.valueOf(port));
@@ -63,7 +67,8 @@ public class RpcConsumer {
             handler = getRpcConsumerHandler(serviceAddress, port, key);
             handlerMap.put(key, handler);
         }
-       return handler.sendRequest(protocol);
+        RpcRequest rpcRequest = protocol.getBody();
+        return handler.sendRequest(protocol, rpcRequest.isAsync(), rpcRequest.isOneway());
     }
 
     private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port, String key) throws InterruptedException {
