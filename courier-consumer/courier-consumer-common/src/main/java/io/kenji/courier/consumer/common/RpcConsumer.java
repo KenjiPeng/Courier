@@ -1,12 +1,16 @@
 package io.kenji.courier.consumer.common;
 
+import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.threadpool.ClientThreadPool;
 import io.kenji.courier.consumer.common.consumer.Consumer;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
+import io.kenji.courier.consumer.common.helper.RpcConsumerHandlerHelper;
 import io.kenji.courier.consumer.common.initializer.RpcConsumerInitializer;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.protocol.request.RpcRequest;
+import io.kenji.courier.registry.api.RegistryService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -14,8 +18,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
 /**
  * @Author Kenji Peng
@@ -29,7 +32,7 @@ public class RpcConsumer implements Consumer {
 
     private static volatile RpcConsumer instance;
 
-    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
+//    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
 
     private RpcConsumer() {
         this.bootstrap = new Bootstrap();
@@ -52,26 +55,31 @@ public class RpcConsumer implements Consumer {
     public void close() {
         eventLoopGroup.shutdownGracefully();
         ClientThreadPool.shutdown();
+        RpcConsumerHandlerHelper.closeConsumerHandler();
     }
 
     @Override
-    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol) throws Exception {
-        String serviceAddress = "127.0.0.1";
-        int port = 27880;
-        String key = serviceAddress.concat("_").concat(String.valueOf(port));
-        RpcConsumerHandler handler = handlerMap.get(key);
-        if (handler == null) {
-            handler = getRpcConsumerHandler(serviceAddress, port, key);
-        } else if (!handler.getChannel().isActive()) {
-            handler.close();
-            handler = getRpcConsumerHandler(serviceAddress, port, key);
-            handlerMap.put(key, handler);
+    public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol, RegistryService registryService) throws Exception {
+        RpcRequest body = protocol.getBody();
+        String serviceKey = RpcServiceHelper.buildServiceKey(body.getClassName(), body.getVersion(), body.getGroup());
+        Object[] parameters = body.getParameters();
+        int invokerHashCode = (parameters == null || parameters.length == 0) ? serviceKey.hashCode() : parameters[0].hashCode();
+        Optional<ServiceMeta> serviceMetaOptional = registryService.discovery(serviceKey, invokerHashCode);
+        if (serviceMetaOptional.isPresent()) {
+            ServiceMeta serviceMeta = serviceMetaOptional.get();
+            RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);
+            if (handler == null) {
+                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort(), serviceMeta);
+            } else if (!handler.getChannel().isActive()) {
+                handler.close();
+                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort(), serviceMeta);
+            }
+            return handler.sendRequest(protocol, body.getAsync(), body.getOneway());
         }
-        RpcRequest rpcRequest = protocol.getBody();
-        return handler.sendRequest(protocol, rpcRequest.getAsync(), rpcRequest.getOneway());
+        return null;
     }
 
-    private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port, String key) throws InterruptedException {
+    private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port, ServiceMeta serviceMeta) throws InterruptedException {
         ChannelFuture channelFuture = bootstrap.connect(serviceAddress, port).sync();
         channelFuture.addListener(listener -> {
             if (channelFuture.isSuccess()) {
@@ -82,7 +90,7 @@ public class RpcConsumer implements Consumer {
             }
         });
         RpcConsumerHandler rpcConsumerHandler = channelFuture.channel().pipeline().get(RpcConsumerHandler.class);
-        handlerMap.put(key, rpcConsumerHandler);
+        RpcConsumerHandlerHelper.put(serviceMeta, rpcConsumerHandler);
         return rpcConsumerHandler;
     }
 

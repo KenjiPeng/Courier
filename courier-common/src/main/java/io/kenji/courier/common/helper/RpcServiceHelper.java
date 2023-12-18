@@ -7,7 +7,7 @@ package io.kenji.courier.common.helper;
  **/
 public class RpcServiceHelper {
 
-    public static String buildServiceKey(String serviceName,String serviceVersion,String group){
-        return String.join("#",serviceName,serviceVersion,group);
+    public static String buildServiceKey(String serviceName, String serviceVersion, String group) {
+        return String.join("#", serviceName, serviceVersion, group);
     }
 }

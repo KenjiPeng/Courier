@@ -1,5 +1,6 @@
 package io.kenji.courier.test.consumer.handler;
 
+import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.consumer.common.RpcConsumer;
 import io.kenji.courier.consumer.common.callback.AsyncRpcCallback;
@@ -8,7 +9,11 @@ import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
+import io.kenji.courier.registry.api.RegistryService;
+import io.kenji.courier.registry.api.config.RegistryConfig;
+import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @Author Kenji Peng
@@ -20,7 +25,7 @@ public class RpcConsumerHandlerTest {
 
     public static void main(String[] args) throws Exception {
         RpcConsumer rpcConsumer = RpcConsumer.getInstance();
-        RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol());
+        RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol(),getRegistryService("127.0.0.1:2181",RegisterType.ZOOKEEPER));
         rpcFuture.addCallback(new AsyncRpcCallback() {
             @Override
             public void onSuccess(RpcResponse response) {
@@ -47,5 +52,20 @@ public class RpcConsumerHandlerTest {
                 .async(false)
                 .oneway(false).build();
         return RpcProtocol.<RpcRequest>builder().header(RpcHeaderFactory.getRequestHeader(SerializationType.JDK)).body(rpcRequest).build();
+    }
+
+
+    private static RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
+        if (StringUtils.isNotBlank(registryAddress) || registerType == null) {
+            throw new IllegalArgumentException("Registry info is illegal, registryAddress = " + registryAddress + " ,registryService = " + registryAddress);
+        }
+        ZookeeperRegistryService registryService = new ZookeeperRegistryService();
+        try {
+            registryService.init(new RegistryConfig(registryAddress, registerType));
+        } catch (Exception e) {
+            log.error("Hit exception during RpClient init registry service", e);
+            throw new RuntimeException(e);
+        }
+        return registryService;
     }
 }

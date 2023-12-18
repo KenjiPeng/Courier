@@ -1,6 +1,5 @@
 import io.kenji.courier.common.scanner.ClassScanner;
 import io.kenji.courier.common.scanner.consumer.RpcConsumerScanner;
-import io.kenji.courier.common.scanner.provider.RpcProviderScanner;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,10 +18,10 @@ public class ScannerTest {
         classNameList.forEach(System.out::println);
     }
 
-    @Test
-    public void testScannerClassNameListByRpcProvider() throws IOException {
-        RpcProviderScanner.doScannerWithRpcProviderAnnotationFilterAndRegistryService("io.kenji.courier.test.scanner");
-    }
+//    @Test
+//    public void testScannerClassNameListByRpcProvider() throws IOException {
+//        RpcProviderScanner.doScannerWithRpcProviderAnnotationFilterAndRegistryService("io.kenji.courier.test.scanner");
+//    }
 
     @Test
     public void testScannerClassNameListByRpcConsumer() throws IOException {

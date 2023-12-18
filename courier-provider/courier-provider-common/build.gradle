@@ -16,7 +16,10 @@ dependencies {
     implementation project(':courier-protocol')
     implementation project(':courier-common')
     implementation project(':courier-annotation')
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
+//    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation project(':courier-registry:courier-registry-api')
+    implementation project(':courier-registry:courier-registry-zookeeper')
+
 
 }
 

@@ -8,6 +8,7 @@ import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
+import io.kenji.courier.registry.api.RegistryService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +47,8 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
     private Boolean async;
 
     private Boolean oneway;
+
+    private RegistryService registryService;
 
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
@@ -89,7 +92,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
             List<String> argList = Arrays.stream(args).map(Object::toString).toList();
             log.debug("Args in object proxy: {}", String.join(",", argList));
         }
-        RpcFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol);
+        RpcFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol, registryService);
         return rpcFuture == null ? null : timeout > 0 ? rpcFuture.get(timeout, TimeUnit.MILLISECONDS).getResult() : rpcFuture.get().getResult();
     }
 
@@ -98,7 +101,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         RpcProtocol<RpcRequest> request = createRequest(this.clazz.getName(), funcName, args);
         RpcFuture rpcFuture = null;
         try {
-            this.consumer.sendRequest(request);
+            this.consumer.sendRequest(request, registryService);
             rpcFuture = RpcContext.getContext().getRpcFuture();
         } catch (Exception e) {
             log.error("Hit error during rpc consumer sends request asynchronously", e);

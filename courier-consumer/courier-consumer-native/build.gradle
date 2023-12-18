@@ -16,6 +16,9 @@ dependencies {
     implementation project(':courier-proxy:courier-proxy-jdk')
     implementation project(':courier-proxy:courier-proxy-api')
     implementation project(':courier-consumer:courier-consumer-common')
+    implementation project(':courier-registry:courier-registry-api')
+    implementation project(':courier-registry:courier-registry-zookeeper')
+
 }
 
 test {

@@ -1,10 +1,14 @@
 package io.kenji.courier.provider.common.server.base;
 
 import io.kenji.courier.annotation.Proxy;
-import io.kenji.courier.provider.common.handler.RpcProviderHandler;
-import io.kenji.courier.provider.common.server.api.Server;
+import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.codec.RpcDecoder;
 import io.kenji.courier.codec.RpcEncoder;
+import io.kenji.courier.provider.common.handler.RpcProviderHandler;
+import io.kenji.courier.provider.common.server.api.Server;
+import io.kenji.courier.registry.api.RegistryService;
+import io.kenji.courier.registry.api.config.RegistryConfig;
+import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -33,13 +37,29 @@ public class BaseServer implements Server {
     protected Map<String, Object> handlerMap = new HashMap<>();
 
     protected final Proxy proxy;
-    public BaseServer(String serverAddress, Proxy proxy) {
+
+    protected RegistryService registryService;
+
+
+    public BaseServer(String serverAddress, String registryAddress, RegisterType registerType, Proxy proxy) {
         this.proxy = proxy;
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
             this.port = Integer.parseInt(serverArray[1]);
         }
+        this.registryService = this.getRegistryService(registryAddress, registerType);
+    }
+
+    private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
+        RegistryService registryService = null;
+        try {
+            registryService = new ZookeeperRegistryService();
+            registryService.init(new RegistryConfig(registryAddress, registerType));
+        } catch (Exception e) {
+            log.error("Rpc server init error", e);
+        }
+        return registryService;
     }
 
     @Override

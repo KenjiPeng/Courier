@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'io.kenji'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation project(':courier-registry:courier-registry-api')
+    implementation project(':courier-registry:courier-registry-zookeeper')
+    implementation project(':courier-protocol')
+    implementation project(':courier-annotation')
+
+}
+
+test {
+    useJUnitPlatform()
+}

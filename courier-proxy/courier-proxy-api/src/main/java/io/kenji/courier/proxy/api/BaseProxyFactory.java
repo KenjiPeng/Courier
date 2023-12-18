@@ -20,6 +20,7 @@ public abstract class BaseProxyFactory<T> implements ProxyFactory {
                 proxyConfig.consumer(),
                 proxyConfig.serializationType(),
                 proxyConfig.async(),
-                proxyConfig.oneway());
+                proxyConfig.oneway(),
+                proxyConfig.registryService());
     }
 }
