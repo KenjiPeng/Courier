@@ -19,6 +19,8 @@ dependencies {
     implementation group: 'org.apache.curator', name: 'curator-x-discovery', version: '5.5.0'
     implementation group: 'org.apache.curator', name: 'curator-recipes', version: '5.5.0'
     implementation project(':courier-annotation')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-api')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-random')
 
 }
 
