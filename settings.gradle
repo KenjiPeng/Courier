@@ -57,4 +57,8 @@ findProject(':courier-loadbalancer:courier-loadbalancer-random')?.name = 'courie
 include 'courier-spi'
 include 'courier-test:courier-test-spi'
 findProject(':courier-test:courier-test-spi')?.name = 'courier-test-spi'
+include 'courier-serialization:courier-serialization-json'
+findProject(':courier-serialization:courier-serialization-json')?.name = 'courier-serialization-json'
+include 'courier-serialization:courier-serialization-hessian2'
+findProject(':courier-serialization:courier-serialization-hessian2')?.name = 'courier-serialization-hessian2'
 

@@ -13,14 +13,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation project(':courier-serialization:courier-serialization-api')
-    implementation project(':courier-serialization:courier-serialization-jdk')
-    implementation project(':courier-serialization:courier-serialization-json')
-    implementation project(':courier-serialization:courier-serialization-hessian2')
-    implementation project(':courier-protocol')
     implementation project(':courier-common')
-    implementation project(':courier-constants')
-    implementation project(':courier-annotation')
     implementation project(':courier-spi')
+    implementation group: 'io.esastack', name: 'codec-serialization-hessian2', version: '0.1.4'
 
 }
 

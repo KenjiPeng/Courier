@@ -1,10 +1,14 @@
 package io.kenji.courier.serialization.api;
 
+import io.kenji.courier.constants.RpcConstants;
+import io.kenji.courier.spi.annotation.SPI;
+
 /**
  * @Author Kenji Peng
  * @Description
  * @Date 2023/4/25
  **/
+@SPI(RpcConstants.SERIALIZATION_TYPE_JDK)
 public interface Serialization {
     /**
      * Serialize

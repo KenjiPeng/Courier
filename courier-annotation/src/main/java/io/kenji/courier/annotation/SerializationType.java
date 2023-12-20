@@ -19,4 +19,5 @@ public enum SerializationType {
 
     FST
 
+
 }
