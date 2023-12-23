@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'io.kenji'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation project(':courier-serialization:courier-serialization-api')
+    implementation project(':courier-common')
+    implementation project(':courier-spi')
+    implementation group: 'io.protostuff', name: 'protostuff-core', version: '1.8.0'
+    implementation group: 'io.protostuff', name: 'protostuff-runtime', version: '1.8.0'
+
+}
+
+test {
+    useJUnitPlatform()
+}

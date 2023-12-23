@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 public class RpcConsumerNativeTest {
 
     public static void main(String[] args) {
-        RpcClient<Object> rpcClient = new RpcClient<>("127.0.0.1:2181", RegisterType.ZOOKEEPER, "1.0.0", "Kenji", 3000, SerializationType.HESSIAN2, false, false);
+        RpcClient<Object> rpcClient = new RpcClient<>("127.0.0.1:2181", RegisterType.ZOOKEEPER, "1.0.0",
+                "Kenji", 100000, SerializationType.PROTOSTUFF, false, false);
         DemoService demoService = rpcClient.create(DemoService.class);
         String result = demoService.hello("Kenji");
         log.info("Got result: {}", result);

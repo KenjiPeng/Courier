@@ -1,0 +1,1 @@
+KRYO=io.kenji.courier.serialization.kryo.KryoSerialization
