@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'io.kenji'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation project(':courier-spi')
+    implementation project(':courier-reflect:courier-reflect-api')
+    implementation 'cglib:cglib:3.3.0'
+
+}
+
+test {
+    useJUnitPlatform()
+}

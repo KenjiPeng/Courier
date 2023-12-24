@@ -56,7 +56,7 @@ public class RpcDecoder extends ByteToMessageDecoder implements RpcCodec {
                 .serializationType(SerializationType.valueOf(serializationType))
                 .msgLen(dataLength)
                 .build();
-        //TODO serialization
+
         Serialization serialization = getSerialization(serializationType);
         switch (msgTypeEnum.get()) {
             case REQUEST -> {

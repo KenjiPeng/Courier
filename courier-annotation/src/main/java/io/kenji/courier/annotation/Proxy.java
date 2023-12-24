@@ -11,6 +11,10 @@ public enum Proxy {
 
     JAVASSIST,
 
-    CGLIB
+    CGLIB,
+
+    BYTE_BUDDY,
+
+    ASM
 
 }

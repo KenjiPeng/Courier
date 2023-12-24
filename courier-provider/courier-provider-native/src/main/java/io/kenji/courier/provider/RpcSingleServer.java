@@ -1,6 +1,6 @@
 package io.kenji.courier.provider;
 
-import io.kenji.courier.annotation.Proxy;
+import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.provider.common.scanner.RpcProviderScanner;
 import io.kenji.courier.provider.common.server.base.BaseServer;
@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
  **/
 @Slf4j
 public class RpcSingleServer extends BaseServer {
-    public RpcSingleServer(String serverAddress, String registryAddress, RegisterType registerType, String scanPackage, Proxy proxy) {
-        super(serverAddress, registryAddress, registerType, proxy);
+    public RpcSingleServer(String serverAddress, String registryAddress, RegisterType registerType, String scanPackage, ReflectType reflectType) {
+        super(serverAddress, registryAddress, registerType, reflectType);
         try {
             this.handlerMap = RpcProviderScanner.doScannerWithRpcProviderAnnotationFilterAndRegistryService(this.host, this.port, scanPackage, registryService);
         } catch (Exception e) {

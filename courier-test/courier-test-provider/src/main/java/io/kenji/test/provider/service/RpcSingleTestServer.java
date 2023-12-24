@@ -1,6 +1,6 @@
 package io.kenji.test.provider.service;
 
-import io.kenji.courier.annotation.Proxy;
+import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.provider.RpcSingleServer;
 
@@ -12,7 +12,7 @@ import io.kenji.courier.provider.RpcSingleServer;
 public class RpcSingleTestServer {
 
     public static void main(String[] args) {
-        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", RegisterType.ZOOKEEPER, "io.kenji.test", Proxy.JDK);
+        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", RegisterType.ZOOKEEPER, "io.kenji.test", ReflectType.BYTE_BUDDY);
         singleServer.startNettyServer();
     }
 

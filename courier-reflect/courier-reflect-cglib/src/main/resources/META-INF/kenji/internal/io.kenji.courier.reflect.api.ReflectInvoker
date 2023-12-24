@@ -1,0 +1,1 @@
+CGLIB=io.kenji.courier.reflect.cglib.CglibReflectInvoker

@@ -1,6 +1,6 @@
 package io.kenji.courier.provider.common.server.base;
 
-import io.kenji.courier.annotation.Proxy;
+import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.codec.RpcDecoder;
 import io.kenji.courier.codec.RpcEncoder;
@@ -36,13 +36,13 @@ public class BaseServer implements Server {
 
     protected Map<String, Object> handlerMap = new HashMap<>();
 
-    protected final Proxy proxy;
+    protected final ReflectType reflectType;
 
     protected RegistryService registryService;
 
 
-    public BaseServer(String serverAddress, String registryAddress, RegisterType registerType, Proxy proxy) {
-        this.proxy = proxy;
+    public BaseServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType) {
+        this.reflectType = reflectType;
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
             this.host = serverArray[0];
@@ -77,7 +77,7 @@ public class BaseServer implements Server {
                                     //TODO implement custom protocol
                                     .addLast(new RpcDecoder())
                                     .addLast(new RpcEncoder())
-                                    .addLast(new RpcProviderHandler(handlerMap, proxy));
+                                    .addLast(new RpcProviderHandler(handlerMap, reflectType));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

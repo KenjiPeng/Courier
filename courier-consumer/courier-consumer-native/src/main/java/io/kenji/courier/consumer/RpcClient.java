@@ -1,5 +1,6 @@
 package io.kenji.courier.consumer;
 
+import io.kenji.courier.annotation.Proxy;
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.consumer.common.RpcConsumer;
@@ -7,10 +8,10 @@ import io.kenji.courier.proxy.api.ProxyFactory;
 import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
 import io.kenji.courier.proxy.api.config.ProxyConfig;
 import io.kenji.courier.proxy.api.object.ObjectProxy;
-import io.kenji.courier.proxy.jdk.JdkProxyFactory;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
 import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
+import io.kenji.courier.spi.loader.ExtensionLoader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -36,19 +37,21 @@ public class RpcClient<T> {
 
     private SerializationType serializationType;
 
+    private Proxy proxy;
+
     private Boolean async;
 
     private Boolean oneway;
 
 
     public <T> T create(Class<T> interfaceClass) {
-        ProxyFactory proxyFactory = new JdkProxyFactory<>();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtension(ProxyFactory.class, proxy.name());
         proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType)));
         return proxyFactory.getProxy(interfaceClass);
     }
 
     public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
-        return new ObjectProxy<T>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType));
+        return new ObjectProxy<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType));
     }
 
     private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {

@@ -1,0 +1,1 @@
+JAVASSIST=io.kenji.courier.reflect.javassist.JavassistReflectInvoker
