@@ -23,7 +23,9 @@ dependencies {
     implementation project(':courier-reflect:courier-reflect-cglib')
     implementation project(':courier-reflect:courier-reflect-javassist')
     implementation project(':courier-reflect:courier-reflect-bytebuddy')
+    implementation project(':courier-reflect:courier-reflect-asm')
     implementation project(':courier-spi')
+    implementation project(':courier-constants')
 
 
 }

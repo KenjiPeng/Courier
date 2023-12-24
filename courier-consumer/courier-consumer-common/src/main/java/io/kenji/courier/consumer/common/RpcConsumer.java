@@ -2,6 +2,7 @@ package io.kenji.courier.consumer.common;
 
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.threadpool.ClientThreadPool;
+import io.kenji.courier.common.utils.IpUtils;
 import io.kenji.courier.consumer.common.consumer.Consumer;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
@@ -31,6 +32,8 @@ public class RpcConsumer implements Consumer {
     private final EventLoopGroup eventLoopGroup;
 
     private static volatile RpcConsumer instance;
+    
+    private final String localIp;
 
 //    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
 
@@ -39,6 +42,7 @@ public class RpcConsumer implements Consumer {
         this.eventLoopGroup = new NioEventLoopGroup(4);
         bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
                 .handler(new RpcConsumerInitializer());
+        localIp = IpUtils.getLocalHostIp();
     }
 
     public static RpcConsumer getInstance() {
@@ -64,7 +68,7 @@ public class RpcConsumer implements Consumer {
         String serviceKey = RpcServiceHelper.buildServiceKey(body.getClassName(), body.getVersion(), body.getGroup());
         Object[] parameters = body.getParameters();
         int invokerHashCode = (parameters == null || parameters.length == 0) ? serviceKey.hashCode() : parameters[0].hashCode();
-        Optional<ServiceMeta> serviceMetaOptional = registryService.discovery(serviceKey, invokerHashCode);
+        Optional<ServiceMeta> serviceMetaOptional = registryService.discovery(serviceKey, invokerHashCode, localIp);
         if (serviceMetaOptional.isPresent()) {
             ServiceMeta serviceMeta = serviceMetaOptional.get();
             RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);

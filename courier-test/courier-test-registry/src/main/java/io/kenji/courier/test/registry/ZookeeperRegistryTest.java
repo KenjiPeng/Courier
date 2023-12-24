@@ -25,7 +25,7 @@ public class ZookeeperRegistryTest {
 
     @BeforeEach
     public void init() throws Exception {
-        RegistryConfig registryConfig = new RegistryConfig("127.0.0.1:2181", RegisterType.ZOOKEEPER);
+        RegistryConfig registryConfig = new RegistryConfig("127.0.0.1:2181", RegisterType.ZOOKEEPER, null);
         this.registryService = new ZookeeperRegistryService();
         this.registryService.init(registryConfig);
         this.serviceMeta = new ServiceMeta(ZookeeperRegistryTest.class.getName(), "1.0.0", "127.0.0.1", 8080, "Kenji");
@@ -44,13 +44,13 @@ public class ZookeeperRegistryTest {
 
     @Test
     public void testDiscovery() throws Exception {
-        Optional<ServiceMeta> discovery = this.registryService.discovery(RegistryService.class.getName(), "Kenji".hashCode());
+        Optional<ServiceMeta> discovery = this.registryService.discovery(RegistryService.class.getName(), "Kenji".hashCode(), "127.0.0.1");
         discovery.ifPresent(meta -> log.info("discovered service: {}", meta));
     }
 
     @Test
     public void testDestroy() throws Exception {
-         this.registryService.destroy();
+        this.registryService.destroy();
     }
 
 }

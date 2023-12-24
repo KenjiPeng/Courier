@@ -12,7 +12,7 @@ import io.kenji.courier.provider.RpcSingleServer;
 public class RpcSingleTestServer {
 
     public static void main(String[] args) {
-        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", RegisterType.ZOOKEEPER, "io.kenji.test", ReflectType.BYTE_BUDDY);
+        RpcSingleServer singleServer = new RpcSingleServer("127.0.0.1:27880", "127.0.0.1:2181", RegisterType.ZOOKEEPER, "io.kenji.test", ReflectType.ASM);
         singleServer.startNettyServer();
     }
 

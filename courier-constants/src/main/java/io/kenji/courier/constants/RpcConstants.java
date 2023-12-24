@@ -27,4 +27,6 @@ public class RpcConstants {
     public static final String SERIALIZATION_TYPE_HESSIAN2 = "HESSIAN2";
 
     public static final String SERIALIZATION_TYPE_FST = "FST";
+
+    public static final String SERVICE_LOAD_BALANCER_RANDOM = "random";
 }

@@ -17,7 +17,7 @@ public interface RegistryService {
 
     void unregister(ServiceMeta serviceMeta) throws Exception;
 
-    Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode) throws Exception;
+    Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception;
 
     void destroy() throws IOException;
 

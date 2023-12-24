@@ -1,0 +1,1 @@
+RANDOM_WEIGHT=io.kenji.courier.loadbalancer.random.weight.RandomWeightServiceLoadBalancer

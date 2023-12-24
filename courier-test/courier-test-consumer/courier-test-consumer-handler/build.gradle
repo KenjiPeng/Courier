@@ -18,6 +18,7 @@ dependencies {
     implementation project(':courier-proxy:courier-proxy-api')
     implementation project(':courier-registry:courier-registry-api')
     implementation project(':courier-registry:courier-registry-zookeeper')
+    implementation project(':courier-constants')
 
 }
 

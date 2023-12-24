@@ -1,0 +1,1 @@
+RANDOM=io.kenji.courier.loadbalancer.random.RandomServiceLoadBalancer

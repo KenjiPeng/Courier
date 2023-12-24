@@ -3,10 +3,10 @@ package io.kenji.courier.registry.zookeeper;
 
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.loadbalancer.api.ServiceLoadBalancer;
-import io.kenji.courier.loadbalancer.random.RandomServiceLoadBalancer;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
+import io.kenji.courier.spi.loader.ExtensionLoader;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -46,11 +46,10 @@ public class ZookeeperRegistryService implements RegistryService {
     }
 
     @Override
-    public Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode) throws Exception {
+    public Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception {
         List<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName).stream().toList();
-        return Optional.ofNullable(this.serviceLoadBalancer.select(serviceInstances,invokerHashCode)).map(ServiceInstance::getPayload);
+        return Optional.ofNullable(this.serviceLoadBalancer.select(serviceInstances, invokerHashCode,sourceIp)).map(ServiceInstance::getPayload);
     }
-
 
 
     @Override
@@ -60,7 +59,9 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void init(RegistryConfig registryConfig) throws Exception {
-        this.serviceLoadBalancer = new RandomServiceLoadBalancer<>();
+        if (registryConfig.registryLoadBalanceType() != null) {
+            this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.registryLoadBalanceType().name());
+        }
         CuratorFramework client = CuratorFrameworkFactory.newClient(registryConfig.registryAddr(), new ExponentialBackoffRetry(BASE_SLEEP_TIME_MS, MAX_RETRIES));
         client.start();
         JsonInstanceSerializer<ServiceMeta> serializer = new JsonInstanceSerializer<>(ServiceMeta.class);

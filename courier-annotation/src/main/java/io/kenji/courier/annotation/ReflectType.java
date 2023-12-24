@@ -13,5 +13,7 @@ public enum ReflectType {
 
     JAVASSIST,
 
-    BYTE_BUDDY
+    BYTE_BUDDY,
+
+    ASM
 }

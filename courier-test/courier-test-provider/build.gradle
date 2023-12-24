@@ -16,6 +16,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation project(':courier-common')
     implementation project(':courier-annotation')
+    implementation project(':courier-constants')
     implementation project(':courier-provider:courier-provider-native')
     implementation project(':courier-provider:courier-provider-common')
     implementation project(':courier-test:courier-test-api')

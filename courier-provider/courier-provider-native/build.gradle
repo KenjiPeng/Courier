@@ -15,6 +15,7 @@ dependencies {
     implementation project(':courier-provider:courier-provider-common')
     implementation project(':courier-common')
     implementation project(':courier-annotation')
+    implementation project(':courier-constants')
     implementation project(':courier-registry:courier-registry-api')
 
 }

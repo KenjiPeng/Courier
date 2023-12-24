@@ -50,6 +50,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     private RegistryService registryService;
 
+
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
     }

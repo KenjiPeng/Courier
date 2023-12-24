@@ -55,7 +55,7 @@ public class BaseServer implements Server {
         RegistryService registryService = null;
         try {
             registryService = new ZookeeperRegistryService();
-            registryService.init(new RegistryConfig(registryAddress, registerType));
+            registryService.init(new RegistryConfig(registryAddress, registerType, null));
         } catch (Exception e) {
             log.error("Rpc server init error", e);
         }

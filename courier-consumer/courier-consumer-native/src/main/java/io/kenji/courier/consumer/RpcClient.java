@@ -3,6 +3,7 @@ package io.kenji.courier.consumer;
 import io.kenji.courier.annotation.Proxy;
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.annotation.SerializationType;
+import io.kenji.courier.constants.RegistryLoadBalanceType;
 import io.kenji.courier.consumer.common.RpcConsumer;
 import io.kenji.courier.proxy.api.ProxyFactory;
 import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
@@ -29,6 +30,8 @@ public class RpcClient<T> {
 
     private RegisterType registerType;
 
+    private RegistryLoadBalanceType registryLoadBalanceType;
+
     private String serviceVersion;
 
     private String serviceGroup;
@@ -46,21 +49,21 @@ public class RpcClient<T> {
 
     public <T> T create(Class<T> interfaceClass) {
         ProxyFactory proxyFactory = ExtensionLoader.getExtension(ProxyFactory.class, proxy.name());
-        proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType)));
+        proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType)));
         return proxyFactory.getProxy(interfaceClass);
     }
 
     public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
-        return new ObjectProxy<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType));
+        return new ObjectProxy<>(interfaceClass, serviceVersion, serviceGroup, timeout, RpcConsumer.getInstance(), serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType));
     }
 
-    private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
+    private RegistryService getRegistryService(String registryAddress, RegisterType registerType, RegistryLoadBalanceType registryLoadBalanceType) {
         if (StringUtils.isBlank(registryAddress) || registerType == null) {
             throw new IllegalArgumentException("Registry info is illegal, registryAddress = " + registryAddress + " ,registryService = " + registryAddress);
         }
         ZookeeperRegistryService registryService = new ZookeeperRegistryService();
         try {
-            registryService.init(new RegistryConfig(registryAddress, registerType));
+            registryService.init(new RegistryConfig(registryAddress, registerType, registryLoadBalanceType));
         } catch (Exception e) {
             log.error("Hit exception during RpClient init registry service", e);
             throw new RuntimeException(e);

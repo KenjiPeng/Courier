@@ -23,6 +23,7 @@ dependencies {
     implementation project(':courier-registry:courier-registry-api')
     implementation project(':courier-registry:courier-registry-zookeeper')
     implementation project(':courier-spi')
+    implementation project(':courier-constants')
 
 }
 

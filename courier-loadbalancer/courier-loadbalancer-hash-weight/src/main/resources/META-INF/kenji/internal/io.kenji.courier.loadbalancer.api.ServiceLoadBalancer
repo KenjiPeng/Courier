@@ -1,0 +1,1 @@
+HASH_WEIGHT=io.kenji.courier.loadbalancer.hash.weight.HashWeightServiceLoadBalancer

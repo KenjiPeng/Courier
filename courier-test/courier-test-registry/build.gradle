@@ -16,6 +16,7 @@ dependencies {
     implementation project(':courier-registry:courier-registry-zookeeper')
     implementation project(':courier-protocol')
     implementation project(':courier-annotation')
+    implementation project(':courier-constants')
 
 }
 

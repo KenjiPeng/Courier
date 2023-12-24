@@ -21,6 +21,15 @@ dependencies {
     implementation project(':courier-annotation')
     implementation project(':courier-loadbalancer:courier-loadbalancer-api')
     implementation project(':courier-loadbalancer:courier-loadbalancer-random')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-random-weight')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-round-robin')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-round-robin-weight')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-hash')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-hash-weight')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash')
+    implementation project(':courier-spi')
+    implementation project(':courier-constants')
+
 
 }
 

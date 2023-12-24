@@ -61,7 +61,7 @@ public class RpcConsumerHandlerTest {
         }
         ZookeeperRegistryService registryService = new ZookeeperRegistryService();
         try {
-            registryService.init(new RegistryConfig(registryAddress, registerType));
+            registryService.init(new RegistryConfig(registryAddress, registerType,null));
         } catch (Exception e) {
             log.error("Hit exception during RpClient init registry service", e);
             throw new RuntimeException(e);
