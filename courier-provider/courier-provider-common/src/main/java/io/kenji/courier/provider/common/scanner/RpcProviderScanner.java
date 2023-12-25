@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.kenji.courier.constants.RpcConstants.SERVICE_PROVIDER_WEIGHT_MAX;
+import static io.kenji.courier.constants.RpcConstants.SERVICE_PROVIDER_WEIGHT_MIN;
+
 /**
  * @Author Kenji Peng
  * @Description
@@ -34,7 +37,7 @@ public class RpcProviderScanner extends ClassScanner {
                 if (rpcProvider != null) {
                     //Use interfaceClass first, and then use interfaceClassName if interfaceClass is empty
                     //TODO register provider meta info in register service
-                    ServiceMeta serviceMeta = new ServiceMeta(getServiceName(rpcProvider), rpcProvider.version(), host, port, rpcProvider.group());
+                    ServiceMeta serviceMeta = new ServiceMeta(getServiceName(rpcProvider), rpcProvider.version(), host, port, rpcProvider.group(), getWeight(rpcProvider.weight()));
                     registryService.register(serviceMeta);
                     //key=serviceName+version+group, value = instance with @RpcProvider annotation
                     handlerMap.put(RpcServiceHelper.buildServiceKey(serviceMeta.serviceName(), serviceMeta.serviceVersion(), serviceMeta.serviceGroup()), clazz.getDeclaredConstructor().newInstance());
@@ -44,6 +47,15 @@ public class RpcProviderScanner extends ClassScanner {
             }
         });
         return handlerMap;
+    }
+
+    private static int getWeight(int weight) {
+        if (weight < SERVICE_PROVIDER_WEIGHT_MIN) {
+            weight = SERVICE_PROVIDER_WEIGHT_MIN;
+        } else if (weight > SERVICE_PROVIDER_WEIGHT_MAX) {
+            weight = SERVICE_PROVIDER_WEIGHT_MAX;
+        }
+        return weight;
     }
 
     private static String getServiceName(RpcProvider rpcProvider) {

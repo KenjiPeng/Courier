@@ -28,7 +28,7 @@ public class ZookeeperRegistryTest {
         RegistryConfig registryConfig = new RegistryConfig("127.0.0.1:2181", RegisterType.ZOOKEEPER, null);
         this.registryService = new ZookeeperRegistryService();
         this.registryService.init(registryConfig);
-        this.serviceMeta = new ServiceMeta(ZookeeperRegistryTest.class.getName(), "1.0.0", "127.0.0.1", 8080, "Kenji");
+        this.serviceMeta = new ServiceMeta(ZookeeperRegistryTest.class.getName(), "1.0.0", "127.0.0.1", 8080, "Kenji",2);
     }
 
     @Test

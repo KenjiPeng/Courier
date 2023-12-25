@@ -12,7 +12,9 @@ public record ServiceMeta(String serviceName,
                           String serviceVersion,
                           String serviceAddr,
                           int servicePort,
-                          String serviceGroup) implements Serializable {
+                          String serviceGroup,
+
+                          int weight) implements Serializable {
     @Serial
     private static final long serialVersionUID = 493746981500656632L;
 }

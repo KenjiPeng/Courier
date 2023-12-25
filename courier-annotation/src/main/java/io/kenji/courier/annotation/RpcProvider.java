@@ -38,5 +38,11 @@ public @interface RpcProvider {
      */
     String group() default "";
 
+    /**
+     * The selection weight of service provider
+     * @return
+     */
+    int weight() default 1;
+
 
 }

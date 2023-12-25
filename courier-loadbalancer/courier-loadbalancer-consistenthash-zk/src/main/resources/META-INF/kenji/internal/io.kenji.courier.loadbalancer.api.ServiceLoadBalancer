@@ -1,0 +1,1 @@
+ZK_CONSISTENT_HASH=io.kenji.courier.loadbalancer.consistenthash.ZKConsistentHashLoadBalancer

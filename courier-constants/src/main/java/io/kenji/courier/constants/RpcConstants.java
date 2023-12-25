@@ -15,18 +15,11 @@ public class RpcConstants {
      */
     public static final short MAGIC = 0x10;
 
-
-    public static final String SERIALIZATION_TYPE_PROTOSTUFF = "PROTOSTUFF";
-
-    public static final String SERIALIZATION_TYPE_KRYO = "KRYO";
-
-    public static final String SERIALIZATION_TYPE_JSON = "JSON";
-
     public static final String SERIALIZATION_TYPE_JDK = "JDK";
 
-    public static final String SERIALIZATION_TYPE_HESSIAN2 = "HESSIAN2";
-
-    public static final String SERIALIZATION_TYPE_FST = "FST";
-
     public static final String SERVICE_LOAD_BALANCER_RANDOM = "random";
+
+    public static final int SERVICE_PROVIDER_WEIGHT_MAX = 100;
+
+    public static final int SERVICE_PROVIDER_WEIGHT_MIN = 0;
 }

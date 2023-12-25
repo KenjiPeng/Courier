@@ -3,6 +3,7 @@ package io.kenji.courier.registry.zookeeper;
 
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.loadbalancer.api.ServiceLoadBalancer;
+import io.kenji.courier.loadbalancer.api.helper.ServiceLoadBalancerHelper;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
@@ -33,6 +34,8 @@ public class ZookeeperRegistryService implements RegistryService {
 
     private ServiceLoadBalancer<ServiceInstance<ServiceMeta>> serviceLoadBalancer;
 
+    private ServiceLoadBalancer<ServiceMeta> serviceEnhanceLoadBalancer;
+
     @Override
     public void register(ServiceMeta serviceMeta) throws Exception {
         ServiceInstance<ServiceMeta> serviceInstance = createServiceInstance(serviceMeta);
@@ -48,7 +51,10 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception {
         List<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(serviceName).stream().toList();
-        return Optional.ofNullable(this.serviceLoadBalancer.select(serviceInstances, invokerHashCode,sourceIp)).map(ServiceInstance::getPayload);
+        if (this.serviceLoadBalancer!=null){
+            return Optional.ofNullable(this.serviceLoadBalancer.select(serviceInstances, invokerHashCode, sourceIp)).map(ServiceInstance::getPayload);
+        }
+        return Optional.ofNullable(this.serviceEnhanceLoadBalancer.select(ServiceLoadBalancerHelper.getServiceMetaList(serviceInstances),invokerHashCode,sourceIp));
     }
 
 
@@ -60,7 +66,12 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public void init(RegistryConfig registryConfig) throws Exception {
         if (registryConfig.registryLoadBalanceType() != null) {
-            this.serviceLoadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.registryLoadBalanceType().name());
+            ServiceLoadBalancer loadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.registryLoadBalanceType().name());
+            if (registryConfig.registryLoadBalanceType().isEnhance()){
+                this.serviceEnhanceLoadBalancer = loadBalancer;
+            }else {
+                this.serviceLoadBalancer = loadBalancer;
+            }
         }
         CuratorFramework client = CuratorFrameworkFactory.newClient(registryConfig.registryAddr(), new ExponentialBackoffRetry(BASE_SLEEP_TIME_MS, MAX_RETRIES));
         client.start();

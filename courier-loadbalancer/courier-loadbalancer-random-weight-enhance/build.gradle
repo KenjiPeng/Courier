@@ -12,12 +12,10 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation project(':courier-loadbalancer:courier-loadbalancer-api')
     implementation project(':courier-spi')
-    implementation project(':courier-constants')
     implementation project(':courier-protocol')
-    implementation group: 'org.apache.curator', name: 'curator-framework', version: '5.5.0'
-    implementation group: 'org.apache.curator', name: 'curator-x-discovery', version: '5.5.0'
-    implementation group: 'org.apache.curator', name: 'curator-recipes', version: '5.5.0'
+
 }
 
 test {

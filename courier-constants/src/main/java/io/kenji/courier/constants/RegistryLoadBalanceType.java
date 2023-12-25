@@ -1,5 +1,7 @@
 package io.kenji.courier.constants;
 
+import java.util.List;
+
 /**
  * @Author Kenji Peng
  * @Description
@@ -19,5 +21,16 @@ public enum RegistryLoadBalanceType {
 
     HASH_WEIGHT,
 
-    SOURCE_IP_HASH
+    SOURCE_IP_HASH,
+
+    SOURCE_IP_HASH_WEIGHT,
+
+    ZK_CONSISTENT_HASH,
+
+    ENHANCE_RANDOM_WEIGHT;
+
+    public boolean isEnhance() {
+        List<RegistryLoadBalanceType> enhanceLoadBalanceTypeList = List.of(ENHANCE_RANDOM_WEIGHT);
+        return enhanceLoadBalanceTypeList.contains(this);
+    }
 }

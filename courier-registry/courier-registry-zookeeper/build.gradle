@@ -27,6 +27,9 @@ dependencies {
     implementation project(':courier-loadbalancer:courier-loadbalancer-hash')
     implementation project(':courier-loadbalancer:courier-loadbalancer-hash-weight')
     implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash-weight')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-consistenthash-zk')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-random-weight-enhance')
     implementation project(':courier-spi')
     implementation project(':courier-constants')
 
