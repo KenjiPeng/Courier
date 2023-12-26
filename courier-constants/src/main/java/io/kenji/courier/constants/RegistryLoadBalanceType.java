@@ -26,11 +26,19 @@ public enum RegistryLoadBalanceType {
     SOURCE_IP_HASH_WEIGHT,
 
     ZK_CONSISTENT_HASH,
+    RANDOM_WEIGHT_ENHANCED,
+    ROUND_ROBIN_WEIGHT_ENHANCED,
+    HASH_WEIGHT_ENHANCED,
+    SOURCE_IP_HASH_WEIGHT_ENHANCED,
 
-    ENHANCE_RANDOM_WEIGHT;
+    ZK_CONSISTENT_HASH_ENHANCE,
 
-    public boolean isEnhance() {
-        List<RegistryLoadBalanceType> enhanceLoadBalanceTypeList = List.of(ENHANCE_RANDOM_WEIGHT);
+    LEAST_CONNECTION_ENHANCE;
+
+    public boolean isEnhanced() {
+        List<RegistryLoadBalanceType> enhanceLoadBalanceTypeList = List.of(
+                RANDOM_WEIGHT_ENHANCED, ROUND_ROBIN_WEIGHT_ENHANCED, HASH_WEIGHT_ENHANCED,
+                SOURCE_IP_HASH_WEIGHT_ENHANCED, ZK_CONSISTENT_HASH_ENHANCE,LEAST_CONNECTION_ENHANCE);
         return enhanceLoadBalanceTypeList.contains(this);
     }
 }

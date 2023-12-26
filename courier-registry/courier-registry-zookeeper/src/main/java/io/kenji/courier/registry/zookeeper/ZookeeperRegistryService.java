@@ -7,7 +7,9 @@ import io.kenji.courier.loadbalancer.api.helper.ServiceLoadBalancerHelper;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
+import io.kenji.courier.spi.annotation.SPIClass;
 import io.kenji.courier.spi.loader.ExtensionLoader;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -25,6 +27,8 @@ import java.util.Optional;
  * @Description
  * @Date 2023-12-17
  **/
+@Slf4j
+@SPIClass
 public class ZookeeperRegistryService implements RegistryService {
     private static final int BASE_SLEEP_TIME_MS = 1000;
     private static final int MAX_RETRIES = 3;
@@ -65,9 +69,10 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void init(RegistryConfig registryConfig) throws Exception {
+        log.info("Init Zookeeper registry service...");
         if (registryConfig.registryLoadBalanceType() != null) {
             ServiceLoadBalancer loadBalancer = ExtensionLoader.getExtension(ServiceLoadBalancer.class, registryConfig.registryLoadBalanceType().name());
-            if (registryConfig.registryLoadBalanceType().isEnhance()){
+            if (registryConfig.registryLoadBalanceType().isEnhanced()){
                 this.serviceEnhanceLoadBalancer = loadBalancer;
             }else {
                 this.serviceLoadBalancer = loadBalancer;

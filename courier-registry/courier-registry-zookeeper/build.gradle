@@ -29,7 +29,12 @@ dependencies {
     implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash')
     implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash-weight')
     implementation project(':courier-loadbalancer:courier-loadbalancer-consistenthash-zk')
-    implementation project(':courier-loadbalancer:courier-loadbalancer-random-weight-enhance')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-random-weight-enhanced')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-round-robin-weight-enhanced')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-hash-weight-enhanced')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-sourceip-hash-weight-enhanced')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-consistenthash-zk-enhanced')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-least-connections')
     implementation project(':courier-spi')
     implementation project(':courier-constants')
 

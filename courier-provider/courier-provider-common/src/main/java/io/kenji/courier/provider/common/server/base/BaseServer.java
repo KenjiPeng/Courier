@@ -8,7 +8,7 @@ import io.kenji.courier.provider.common.handler.RpcProviderHandler;
 import io.kenji.courier.provider.common.server.api.Server;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
-import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
+import io.kenji.courier.spi.loader.ExtensionLoader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -54,7 +54,7 @@ public class BaseServer implements Server {
     private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
         RegistryService registryService = null;
         try {
-            registryService = new ZookeeperRegistryService();
+            registryService = ExtensionLoader.getExtension(RegistryService.class, registerType.name());
             registryService.init(new RegistryConfig(registryAddress, registerType, null));
         } catch (Exception e) {
             log.error("Rpc server init error", e);

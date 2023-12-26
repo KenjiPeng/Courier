@@ -22,4 +22,9 @@ public class RpcConstants {
     public static final int SERVICE_PROVIDER_WEIGHT_MAX = 100;
 
     public static final int SERVICE_PROVIDER_WEIGHT_MIN = 0;
+
+
+    public static final String HEART_BEAT_PONG = "pong";
+
+    public static final String HEART_BEAT_PING = "ping";
 }

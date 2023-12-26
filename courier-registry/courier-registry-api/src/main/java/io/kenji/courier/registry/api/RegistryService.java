@@ -2,6 +2,7 @@ package io.kenji.courier.registry.api;
 
 import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.registry.api.config.RegistryConfig;
+import io.kenji.courier.spi.annotation.SPI;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.Optional;
  * @Description
  * @Date 2023-12-17
  **/
+@SPI
 public interface RegistryService {
 
     void register(ServiceMeta serviceMeta) throws Exception;

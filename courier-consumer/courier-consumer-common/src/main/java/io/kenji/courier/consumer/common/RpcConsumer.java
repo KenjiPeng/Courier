@@ -8,6 +8,7 @@ import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
 import io.kenji.courier.consumer.common.helper.RpcConsumerHandlerHelper;
 import io.kenji.courier.consumer.common.initializer.RpcConsumerInitializer;
+import io.kenji.courier.loadbalancer.api.context.ConnectionsContext;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 import io.kenji.courier.protocol.request.RpcRequest;
@@ -32,7 +33,7 @@ public class RpcConsumer implements Consumer {
     private final EventLoopGroup eventLoopGroup;
 
     private static volatile RpcConsumer instance;
-    
+
     private final String localIp;
 
 //    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
@@ -73,23 +74,24 @@ public class RpcConsumer implements Consumer {
             ServiceMeta serviceMeta = serviceMetaOptional.get();
             RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);
             if (handler == null) {
-                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort(), serviceMeta);
+                handler = getRpcConsumerHandler(serviceMeta);
             } else if (!handler.getChannel().isActive()) {
                 handler.close();
-                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort(), serviceMeta);
+                handler = getRpcConsumerHandler( serviceMeta);
             }
             return handler.sendRequest(protocol, body.getAsync(), body.getOneway());
         }
         return null;
     }
 
-    private RpcConsumerHandler getRpcConsumerHandler(String serviceAddress, int port, ServiceMeta serviceMeta) throws InterruptedException {
-        ChannelFuture channelFuture = bootstrap.connect(serviceAddress, port).sync();
+    private RpcConsumerHandler getRpcConsumerHandler(ServiceMeta serviceMeta) throws InterruptedException {
+        ChannelFuture channelFuture = bootstrap.connect(serviceMeta.serviceAddr(), serviceMeta.servicePort()).sync();
         channelFuture.addListener(listener -> {
             if (channelFuture.isSuccess()) {
-                log.info("Connect rpc provider server {} on port {} success", serviceAddress, port);
+                log.info("Connect rpc provider server {} on port {} success", serviceMeta.serviceAddr(), serviceMeta.servicePort());
+                ConnectionsContext.add(serviceMeta);
             } else {
-                log.error("Failed to connect rpc provider server {} on port {}", serviceAddress, port, channelFuture.cause());
+                log.error("Failed to connect rpc provider server {} on port {}",serviceMeta.serviceAddr(), serviceMeta.servicePort(), channelFuture.cause());
                 eventLoopGroup.shutdownGracefully();
             }
         });

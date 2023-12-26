@@ -11,7 +11,6 @@ import io.kenji.courier.proxy.api.config.ProxyConfig;
 import io.kenji.courier.proxy.api.object.ObjectProxy;
 import io.kenji.courier.registry.api.RegistryService;
 import io.kenji.courier.registry.api.config.RegistryConfig;
-import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
 import io.kenji.courier.spi.loader.ExtensionLoader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +60,7 @@ public class RpcClient<T> {
         if (StringUtils.isBlank(registryAddress) || registerType == null) {
             throw new IllegalArgumentException("Registry info is illegal, registryAddress = " + registryAddress + " ,registryService = " + registryAddress);
         }
-        ZookeeperRegistryService registryService = new ZookeeperRegistryService();
+        RegistryService registryService = ExtensionLoader.getExtension(RegistryService.class, registerType.name());
         try {
             registryService.init(new RegistryConfig(registryAddress, registerType, registryLoadBalanceType));
         } catch (Exception e) {

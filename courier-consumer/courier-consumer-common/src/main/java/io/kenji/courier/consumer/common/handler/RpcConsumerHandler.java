@@ -4,6 +4,7 @@ import io.kenji.courier.common.utils.GsonUtil;
 import io.kenji.courier.consumer.common.context.RpcContext;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeader;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
@@ -44,10 +45,28 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcResponse> msg) throws Exception {
         if (msg == null) return;
         log.info("Rpc consumer received data, data: {}", GsonUtil.getGson().toJson(msg));
+        handleMessage(msg);
+    }
+
+    private void handleMessage(RpcProtocol<RpcResponse> msg) {
+        byte msgType = msg.getHeader().getMsgType();
+        if ((byte) RpcType.HEARTBEAT.getType() == msgType) {
+             handleHeartBeatMessage(msg);
+        } else if ((byte) RpcType.RESPONSE.getType() == msgType) {
+             handleResponseMessage(msg);
+        }
+    }
+
+    private void handleResponseMessage(RpcProtocol<RpcResponse> msg) {
         RpcFuture rpcFuture = pendingRpc.remove(msg.getHeader().getRequestId());
         if (rpcFuture != null) {
             rpcFuture.done(msg);
         }
+    }
+
+    //Only print heart beat response
+    private void handleHeartBeatMessage(RpcProtocol<RpcResponse> msg) {
+        log.info("Got heart beat from service provider, data: {}", GsonUtil.getGson().toJson(msg));
     }
 
     @Override

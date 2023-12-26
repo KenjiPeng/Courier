@@ -16,6 +16,7 @@ dependencies {
     implementation project(':courier-common')
     implementation project(':courier-codec')
     implementation project(':courier-registry:courier-registry-api')
+    implementation project(':courier-loadbalancer:courier-loadbalancer-api')
 
 }
 
