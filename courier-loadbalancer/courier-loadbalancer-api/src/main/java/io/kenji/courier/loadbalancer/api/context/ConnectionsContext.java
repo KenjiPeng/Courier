@@ -1,5 +1,6 @@
 package io.kenji.courier.loadbalancer.api.context;
 
+import io.kenji.courier.common.helper.RpcConnectionHelper;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 
 import java.util.Map;
@@ -15,8 +16,8 @@ public class ConnectionsContext {
 
     private static volatile Map<String, Integer> connectionsMap = new ConcurrentHashMap<>();
 
-    public static void add(ServiceMeta serviceMeta) {
-        String key = generateKey(serviceMeta);
+    public static void add(String serviceAddr, int servicePort) {
+        String key = RpcConnectionHelper.buildConnectionKey(serviceAddr, servicePort);
         Integer count = connectionsMap.get(key);
         if (count == null) {
             count = 0;
@@ -26,13 +27,13 @@ public class ConnectionsContext {
     }
 
     public static Integer getConnectionCount(ServiceMeta serviceMeta) {
-        String key = generateKey(serviceMeta);
+        String key = RpcConnectionHelper.buildConnectionKey(serviceMeta.serviceAddr(), serviceMeta.servicePort());
         return connectionsMap.get(key);
     }
 
-    private static String generateKey(ServiceMeta serviceMeta) {
-        return serviceMeta.serviceAddr().concat(":").concat(String.valueOf(serviceMeta.servicePort()));
-    }
+//    private static String generateKey(String serviceAddr, int servicePort) {
+//        return serviceAddr.concat(":").concat(String.valueOf(servicePort));
+//    }
 
 
 }

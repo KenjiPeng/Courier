@@ -1,8 +1,11 @@
 package io.kenji.courier.common.utils;
 
+import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -21,6 +24,12 @@ public class IpUtils {
             log.error("Hit exception during getting local ip address", e);
         }
         return null;
+    }
+    public static Pair<String,Integer> getRemoteAddressAndPort(Channel channel){
+        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        String address = remoteAddress.getAddress().getHostAddress();
+        int port = remoteAddress.getPort();
+        return Pair.of(address,port);
     }
 
     public static String getLocalHostIp() {

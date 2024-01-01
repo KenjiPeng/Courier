@@ -8,6 +8,7 @@ import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
 import io.kenji.courier.consumer.common.helper.RpcConsumerHandlerHelper;
 import io.kenji.courier.consumer.common.initializer.RpcConsumerInitializer;
+import io.kenji.courier.consumer.common.manager.ConsumerConnectionManager;
 import io.kenji.courier.loadbalancer.api.context.ConnectionsContext;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.meta.ServiceMeta;
@@ -21,6 +22,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author Kenji Peng
@@ -36,21 +40,48 @@ public class RpcConsumer implements Consumer {
 
     private final String localIp;
 
-//    private static final Map<String, RpcConsumerHandler> handlerMap = new ConcurrentHashMap<>();
+    private ScheduledExecutorService executorService;
+    // heartbeatInterval
+    private int heartbeatInterval = 30;
+    private TimeUnit heartbeatIntervalTimeUnit = TimeUnit.SECONDS;
+    // scanNotActiveChannelInterval
+    private int scanNotActiveChannelInterval = 60;
+    private TimeUnit scanNotActiveChannelIntervalTimeUnit = TimeUnit.SECONDS;
 
-    private RpcConsumer() {
+    private RpcConsumer(int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
         this.bootstrap = new Bootstrap();
         this.eventLoopGroup = new NioEventLoopGroup(4);
-        bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
-                .handler(new RpcConsumerInitializer());
         localIp = IpUtils.getLocalHostIp();
+        if (heartbeatInterval > 0 && heartbeatIntervalTimeUnit != null) {
+            this.heartbeatInterval = heartbeatInterval;
+            this.heartbeatIntervalTimeUnit = heartbeatIntervalTimeUnit;
+        }
+        if (scanNotActiveChannelInterval > 0 && scanNotActiveChannelIntervalTimeUnit != null) {
+            this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
+            this.scanNotActiveChannelIntervalTimeUnit = scanNotActiveChannelIntervalTimeUnit;
+        }
+        bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
+                .handler(new RpcConsumerInitializer(this.heartbeatInterval, this.heartbeatIntervalTimeUnit));
+        this.startHeartBeat();
     }
 
-    public static RpcConsumer getInstance() {
+    private void startHeartBeat() {
+        executorService = Executors.newScheduledThreadPool(2);
+        executorService.scheduleAtFixedRate(() -> {
+            log.info("========scan not active channel============");
+            ConsumerConnectionManager.scanNotActiveChannel();
+        }, 10, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit);
+        executorService.scheduleAtFixedRate(() -> {
+            log.info("========broadcast ping message from consumer============");
+            ConsumerConnectionManager.broadcastPingMessageFromConsumer(this);
+        }, 3, heartbeatInterval, heartbeatIntervalTimeUnit);
+    }
+
+    public static RpcConsumer getInstance(int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
         if (instance == null) {
             synchronized (RpcConsumer.class) {
                 if (instance == null) {
-                    instance = new RpcConsumer();
+                    instance = new RpcConsumer(heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit);
                 }
             }
         }
@@ -61,6 +92,7 @@ public class RpcConsumer implements Consumer {
         eventLoopGroup.shutdownGracefully();
         ClientThreadPool.shutdown();
         RpcConsumerHandlerHelper.closeConsumerHandler();
+        executorService.shutdown();
     }
 
     @Override
@@ -74,29 +106,29 @@ public class RpcConsumer implements Consumer {
             ServiceMeta serviceMeta = serviceMetaOptional.get();
             RpcConsumerHandler handler = RpcConsumerHandlerHelper.get(serviceMeta);
             if (handler == null) {
-                handler = getRpcConsumerHandler(serviceMeta);
+                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort());
             } else if (!handler.getChannel().isActive()) {
                 handler.close();
-                handler = getRpcConsumerHandler( serviceMeta);
+                handler = getRpcConsumerHandler(serviceMeta.serviceAddr(), serviceMeta.servicePort());
             }
             return handler.sendRequest(protocol, body.getAsync(), body.getOneway());
         }
         return null;
     }
 
-    private RpcConsumerHandler getRpcConsumerHandler(ServiceMeta serviceMeta) throws InterruptedException {
-        ChannelFuture channelFuture = bootstrap.connect(serviceMeta.serviceAddr(), serviceMeta.servicePort()).sync();
+    public RpcConsumerHandler getRpcConsumerHandler(String serviceAddr, int servicePort) throws InterruptedException {
+        ChannelFuture channelFuture = bootstrap.connect(serviceAddr, servicePort).sync();
         channelFuture.addListener(listener -> {
             if (channelFuture.isSuccess()) {
-                log.info("Connect rpc provider server {} on port {} success", serviceMeta.serviceAddr(), serviceMeta.servicePort());
-                ConnectionsContext.add(serviceMeta);
+                log.info("Connect rpc provider server {} on port {} success", serviceAddr, servicePort);
+                ConnectionsContext.add(serviceAddr, servicePort);
             } else {
-                log.error("Failed to connect rpc provider server {} on port {}",serviceMeta.serviceAddr(), serviceMeta.servicePort(), channelFuture.cause());
+                log.error("Failed to connect rpc provider server {} on port {}", serviceAddr, servicePort, channelFuture.cause());
                 eventLoopGroup.shutdownGracefully();
             }
         });
         RpcConsumerHandler rpcConsumerHandler = channelFuture.channel().pipeline().get(RpcConsumerHandler.class);
-        RpcConsumerHandlerHelper.put(serviceMeta, rpcConsumerHandler);
+        RpcConsumerHandlerHelper.put(serviceAddr, servicePort, rpcConsumerHandler);
         return rpcConsumerHandler;
     }
 

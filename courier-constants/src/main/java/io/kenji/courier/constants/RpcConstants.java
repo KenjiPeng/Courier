@@ -27,4 +27,14 @@ public class RpcConstants {
     public static final String HEART_BEAT_PONG = "pong";
 
     public static final String HEART_BEAT_PING = "ping";
+
+    public static final String DECODER_HANDLER = "Decoder";
+
+    public static final String ENCODER_HANDLER = "Encoder";
+
+    public static final String IDLE_STATE_HANDLER = "IdleStateHandler";
+
+    public static final String PROVIDER_HANDLER = "RpcProviderHandler";
+
+    public static final String CONSUMER_HANDLER = "RpcConsumerHandler";
 }

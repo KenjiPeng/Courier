@@ -18,9 +18,21 @@ public enum RpcType {
      */
     RESPONSE(2),
     /**
-     * HeartBeat data
+     * HeartBeat request data from consumer
      */
-    HEARTBEAT(3);
+    HEARTBEAT_REQUEST_FROM_CONSUMER(3),
+    /**
+     * HeartBeat response data from provider
+     */
+    HEARTBEAT_RESPONSE_FROM_PROVIDER(4),
+    /**
+     * HeartBeat request data from provider
+     */
+    HEARTBEAT_REQUEST_FROM_PROVIDER(5),
+    /**
+     * HeartBeat request data from consumer
+     */
+    HEARTBEAT_RESPONSE_FROM_CONSUMER(6);
 
     private final int type;
 

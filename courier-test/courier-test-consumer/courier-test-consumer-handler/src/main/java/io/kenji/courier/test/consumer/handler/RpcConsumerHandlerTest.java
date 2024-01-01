@@ -6,6 +6,7 @@ import io.kenji.courier.consumer.common.RpcConsumer;
 import io.kenji.courier.consumer.common.callback.AsyncRpcCallback;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
@@ -14,6 +15,8 @@ import io.kenji.courier.registry.api.config.RegistryConfig;
 import io.kenji.courier.registry.zookeeper.ZookeeperRegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author Kenji Peng
@@ -24,17 +27,17 @@ import org.apache.commons.lang3.StringUtils;
 public class RpcConsumerHandlerTest {
 
     public static void main(String[] args) throws Exception {
-        RpcConsumer rpcConsumer = RpcConsumer.getInstance();
-        RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol(),getRegistryService("127.0.0.1:2181",RegisterType.ZOOKEEPER));
+        RpcConsumer rpcConsumer = RpcConsumer.getInstance(10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
+        RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol(), getRegistryService("127.0.0.1:2181", RegisterType.ZOOKEEPER));
         rpcFuture.addCallback(new AsyncRpcCallback() {
             @Override
             public void onSuccess(RpcResponse response) {
-                log.info("Callback on success, received response: {}",response);
+                log.info("Callback on success, received response: {}", response);
             }
 
             @Override
             public void onException(Exception e) {
-                log.error("Callback on exception",e);
+                log.error("Callback on exception", e);
             }
         });
         Thread.sleep(200);
@@ -51,7 +54,7 @@ public class RpcConsumerHandlerTest {
                 .version("1.0.0")
                 .async(false)
                 .oneway(false).build();
-        return RpcProtocol.<RpcRequest>builder().header(RpcHeaderFactory.getRequestHeader(SerializationType.JDK)).body(rpcRequest).build();
+        return RpcProtocol.<RpcRequest>builder().header(RpcHeaderFactory.getRpcProtocolHeader(SerializationType.JDK, RpcType.REQUEST.getType())).body(rpcRequest).build();
     }
 
 
@@ -61,7 +64,7 @@ public class RpcConsumerHandlerTest {
         }
         ZookeeperRegistryService registryService = new ZookeeperRegistryService();
         try {
-            registryService.init(new RegistryConfig(registryAddress, registerType,null));
+            registryService.init(new RegistryConfig(registryAddress, registerType, null));
         } catch (Exception e) {
             log.error("Hit exception during RpClient init registry service", e);
             throw new RuntimeException(e);

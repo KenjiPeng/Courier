@@ -59,13 +59,13 @@ public class RpcDecoder extends ByteToMessageDecoder implements RpcCodec {
 
         Serialization serialization = getSerialization(serializationType);
         switch (msgTypeEnum.get()) {
-            case REQUEST -> {
+            case REQUEST, HEARTBEAT_REQUEST_FROM_CONSUMER,HEARTBEAT_RESPONSE_FROM_CONSUMER -> {
                 RpcRequest request = serialization.deserialize(data, RpcRequest.class);
                 if (request != null) {
                     out.add(RpcProtocol.builder().header(header).body(request).build());
                 }
             }
-            case RESPONSE -> {
+            case RESPONSE, HEARTBEAT_RESPONSE_FROM_PROVIDER,   HEARTBEAT_REQUEST_FROM_PROVIDER -> {
                 RpcResponse response = serialization.deserialize(data, RpcResponse.class);
                 if (response != null) {
                     out.add(RpcProtocol.builder().header(header).body(response).build());

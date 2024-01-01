@@ -5,6 +5,7 @@ import io.kenji.courier.consumer.common.consumer.Consumer;
 import io.kenji.courier.consumer.common.context.RpcContext;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
@@ -80,7 +81,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
                 .oneway(oneway)
                 .build();
         RpcProtocol<RpcRequest> requestRpcProtocol = RpcProtocol.<RpcRequest>builder()
-                .header(RpcHeaderFactory.getRequestHeader(serializationType))
+                .header(RpcHeaderFactory.getRpcProtocolHeader(serializationType, RpcType.REQUEST.getType()))
                 .body(rpcRequest)
                 .build();
         log.debug("Class name in object proxy: {}", method.getDeclaringClass().getName());
@@ -133,7 +134,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
             log.debug("Args in object proxy: {}", String.join(",", argList));
         }
         return RpcProtocol.<RpcRequest>builder()
-                .header(RpcHeaderFactory.getRequestHeader(serializationType))
+                .header(RpcHeaderFactory.getRpcProtocolHeader(serializationType,RpcType.REQUEST.getType()))
                 .body(rpcRequest)
                 .build();
     }

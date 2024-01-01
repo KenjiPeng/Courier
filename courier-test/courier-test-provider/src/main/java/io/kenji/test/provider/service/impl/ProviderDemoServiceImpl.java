@@ -15,6 +15,11 @@ public class ProviderDemoServiceImpl implements DemoService {
     @Override
     public String hello(String name) {
         log.info("Invoked hello method, param: {}", name);
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException e) {
+            log.error("hit exception",e);
+        }
         return "Hello " + name;
     }
 }

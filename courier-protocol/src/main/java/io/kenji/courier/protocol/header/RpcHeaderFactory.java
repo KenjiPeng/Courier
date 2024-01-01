@@ -3,7 +3,6 @@ package io.kenji.courier.protocol.header;
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.common.id.IdFactory;
 import io.kenji.courier.constants.RpcConstants;
-import io.kenji.courier.protocol.enumeration.RpcType;
 
 /**
  * @Author Kenji Peng
@@ -12,11 +11,11 @@ import io.kenji.courier.protocol.enumeration.RpcType;
  **/
 public class RpcHeaderFactory {
 
-    public static RpcHeader getRequestHeader(SerializationType serializationType) {
+    public static RpcHeader getRpcProtocolHeader(SerializationType serializationType, int msgType) {
         return RpcHeader.builder()
                 .magic(RpcConstants.MAGIC)
                 .requestId(IdFactory.getId())
-                .msgType((byte) RpcType.REQUEST.getType())
+                .msgType((byte) msgType)
                 .status((byte) 0x1)
                 .serializationType(serializationType)
                 .build();

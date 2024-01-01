@@ -8,6 +8,8 @@ import io.kenji.courier.consumer.RpcClient;
 import io.kenji.courier.test.api.DemoService;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @Author Kenji Peng
  * @Description
@@ -17,8 +19,21 @@ import lombok.extern.slf4j.Slf4j;
 public class RpcConsumerNativeTest {
 
     public static void main(String[] args) {
-        RpcClient<Object> rpcClient = new RpcClient<>("127.0.0.1:2181", RegisterType.ZOOKEEPER, RegistryLoadBalanceType.LEAST_CONNECTION_ENHANCE, "1.0.0",
-                "Kenji", 100000, SerializationType.PROTOSTUFF, Proxy.ASM, false, false);
+        RpcClient<Object> rpcClient = RpcClient.builder()
+                .registryAddress("127.0.0.1:2181")
+                .registerType(RegisterType.ZOOKEEPER)
+                .registryLoadBalanceType(RegistryLoadBalanceType.LEAST_CONNECTION_ENHANCE)
+                .serviceVersion("1.0.0")
+                .serviceGroup("Kenji")
+                .requestTimeoutInMilliseconds(10000000)
+                .serializationType(SerializationType.PROTOSTUFF)
+                .proxy(Proxy.ASM)
+                .async(false)
+                .oneway(false)
+                .heartbeatInterval(10)
+                .heartbeatIntervalTimeUnit(TimeUnit.SECONDS)
+                .scanNotActiveChannelInterval(10)
+                .scanNotActiveChannelIntervalTimeUnit(TimeUnit.SECONDS).build();
         DemoService demoService = rpcClient.create(DemoService.class);
         String result = demoService.hello("Kenji");
         log.info("Got result: {}", result);

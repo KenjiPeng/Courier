@@ -1,11 +1,17 @@
 package io.kenji.courier.consumer.common.handler;
 
+import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.common.utils.GsonUtil;
+import io.kenji.courier.constants.RpcConstants;
+import io.kenji.courier.consumer.common.cache.ConsumerChannelCache;
 import io.kenji.courier.consumer.common.context.RpcContext;
 import io.kenji.courier.consumer.common.future.RpcFuture;
+import io.kenji.courier.consumer.common.manager.ConsumerConnectionManager;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.enumeration.RpcStatus;
 import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeader;
+import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
 import io.netty.buffer.Unpooled;
@@ -13,6 +19,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
@@ -45,16 +52,46 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcResponse> msg) throws Exception {
         if (msg == null) return;
         log.info("Rpc consumer received data, data: {}", GsonUtil.getGson().toJson(msg));
-        handleMessage(msg);
+        handleMessage(ctx.channel(), msg);
     }
 
-    private void handleMessage(RpcProtocol<RpcResponse> msg) {
-        byte msgType = msg.getHeader().getMsgType();
-        if ((byte) RpcType.HEARTBEAT.getType() == msgType) {
-             handleHeartBeatMessage(msg);
-        } else if ((byte) RpcType.RESPONSE.getType() == msgType) {
-             handleResponseMessage(msg);
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        // if it is IdleStateEvent
+        if (evt instanceof IdleStateEvent) {
+            Channel channel = ctx.channel();
+            log.info("IdleStateEvent is triggered, consumer tries to heart beat request to provider actively");
+            RpcRequest request = new RpcRequest();
+            request.setParameters(new Object[]{RpcConstants.HEART_BEAT_PING});
+            RpcProtocol<RpcRequest> rpcProtocol = RpcProtocol.<RpcRequest>builder()
+                    .header(RpcHeaderFactory.getRpcProtocolHeader(SerializationType.PROTOSTUFF, RpcType.HEARTBEAT_REQUEST_FROM_CONSUMER.getType()))
+                    .body(request)
+                    .build();
+            channel.writeAndFlush(rpcProtocol);
         }
+        super.userEventTriggered(ctx, evt);
+    }
+
+    private void handleMessage(Channel channel, RpcProtocol<RpcResponse> msg) {
+        byte msgType = msg.getHeader().getMsgType();
+        if ((byte) RpcType.HEARTBEAT_RESPONSE_FROM_PROVIDER.getType() == msgType) {
+            handleHeartBeatResponseFromProvider(channel, msg);
+        } else if ((byte) RpcType.HEARTBEAT_REQUEST_FROM_PROVIDER.getType() == msgType) {
+            handleHeartBeatRequestFromProvider(channel, msg);
+        } else if ((byte) RpcType.RESPONSE.getType() == msgType) {
+            handleResponseMessage(msg);
+        }
+    }
+
+    private void handleHeartBeatRequestFromProvider(Channel channel, RpcProtocol<RpcResponse> msg) {
+        RpcHeader header = msg.getHeader();
+        RpcResponse responseBody = msg.getBody();
+        log.info("Received heart beat, requestId: {}, body: {}", header.getRequestId(), responseBody);
+        RpcRequest rpcRequest = RpcRequest.builder().parameters(new Object[]{RpcConstants.HEART_BEAT_PONG}).build();
+        header.setMsgType((byte) RpcType.HEARTBEAT_RESPONSE_FROM_CONSUMER.getType());
+        header.setStatus((byte) RpcStatus.SUCCESS.getCode());
+        RpcProtocol<RpcRequest> rpcProtocol = RpcProtocol.<RpcRequest>builder().header(header).body(rpcRequest).build();
+        channel.writeAndFlush(rpcProtocol);
     }
 
     private void handleResponseMessage(RpcProtocol<RpcResponse> msg) {
@@ -65,20 +102,34 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
     }
 
     //Only print heart beat response
-    private void handleHeartBeatMessage(RpcProtocol<RpcResponse> msg) {
-        log.info("Got heart beat from service provider, data: {}", GsonUtil.getGson().toJson(msg));
+    private void handleHeartBeatResponseFromProvider(Channel channel, RpcProtocol<RpcResponse> msg) {
+        log.info("Got heart beat response from service provider {}, data: {}", channel.remoteAddress(), GsonUtil.getGson().toJson(msg));
+        ConsumerConnectionManager.removeHeartBeatRecord(channel);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         this.remotePeer = this.channel.remoteAddress();
+        ConsumerChannelCache.addChannelIntoCache(ctx.channel());
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         this.channel = ctx.channel();
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
+        ConsumerChannelCache.removeChannelFromCache(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        ConsumerChannelCache.removeChannelFromCache(ctx.channel());
     }
 
     public RpcFuture sendRequest(RpcProtocol<RpcRequest> protocol, Boolean async, boolean oneway) {
@@ -117,5 +168,13 @@ public class RpcConsumerHandler extends SimpleChannelInboundHandler<RpcProtocol<
 
     public void close() {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        ConsumerChannelCache.removeChannelFromCache(channel);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("server caught exception", cause);
+        ConsumerChannelCache.removeChannelFromCache(ctx.channel());
+        ctx.close();
     }
 }

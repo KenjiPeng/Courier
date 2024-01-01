@@ -1,5 +1,6 @@
 package io.kenji.courier.consumer.common.helper;
 
+import io.kenji.courier.common.helper.RpcConnectionHelper;
 import io.kenji.courier.consumer.common.handler.RpcConsumerHandler;
 import io.kenji.courier.protocol.meta.ServiceMeta;
 
@@ -16,21 +17,21 @@ public class RpcConsumerHandlerHelper {
 
     private static final Map<String, RpcConsumerHandler> rpcConsumerHandlerMap = new ConcurrentHashMap<>();
 
-    private static String getKey(ServiceMeta key){
-        return key.serviceAddr().concat("_").concat(String.valueOf(key.servicePort()));
+    public static void put(String serviceAddr, int servicePort, RpcConsumerHandler value) {
+        rpcConsumerHandlerMap.put(RpcConnectionHelper.buildConnectionKey(serviceAddr, servicePort), value);
     }
 
-    public static void put(ServiceMeta key,RpcConsumerHandler value){
-        rpcConsumerHandlerMap.put(getKey(key),value);
+    public static RpcConsumerHandler get(ServiceMeta key) {
+        return rpcConsumerHandlerMap.get(RpcConnectionHelper.buildConnectionKey(key.serviceAddr(), key.servicePort()));
     }
 
-    public static RpcConsumerHandler get(ServiceMeta key){
-        return rpcConsumerHandlerMap.get(getKey(key));
+    public static void remove(String serviceAddr, int servicePort){
+        rpcConsumerHandlerMap.remove(RpcConnectionHelper.buildConnectionKey(serviceAddr, servicePort));
     }
 
-    public static void closeConsumerHandler(){
+    public static void closeConsumerHandler() {
         Collection<RpcConsumerHandler> rpcConsumerHandlers = rpcConsumerHandlerMap.values();
-        if (rpcConsumerHandlers.size()>0){
+        if (rpcConsumerHandlers.size() > 0) {
             rpcConsumerHandlers.forEach(RpcConsumerHandler::close);
         }
         rpcConsumerHandlerMap.clear();

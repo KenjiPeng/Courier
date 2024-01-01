@@ -1,9 +1,10 @@
 package io.kenji.courier.test.consumer.codec.handler;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 import io.kenji.courier.annotation.SerializationType;
 import io.kenji.courier.common.utils.GsonUtil;
 import io.kenji.courier.protocol.RpcProtocol;
+import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
@@ -36,7 +37,7 @@ public class RpcTestConsumerHandler extends SimpleChannelInboundHandler<RpcProto
                 .version("1.0.0")
                 .async(false)
                 .oneway(false).build();
-        RpcProtocol<Object> rpcProtocol = RpcProtocol.builder().header(RpcHeaderFactory.getRequestHeader(SerializationType.JDK)).body(rpcRequest).build();
+        RpcProtocol<Object> rpcProtocol = RpcProtocol.builder().header(RpcHeaderFactory.getRpcProtocolHeader(SerializationType.JDK, RpcType.REQUEST.getType())).body(rpcRequest).build();
         log.info("Rpc consumer send data = {}", GsonUtil.getGson().toJson(rpcProtocol));
         ctx.writeAndFlush(rpcProtocol);
         log.info("Finish sending data...");

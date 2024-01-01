@@ -3,17 +3,23 @@ package io.kenji.courier.provider.common.handler;
 import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.threadpool.ServerThreadPool;
+import io.kenji.courier.common.utils.GsonUtil;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.enumeration.RpcStatus;
 import io.kenji.courier.protocol.enumeration.RpcType;
 import io.kenji.courier.protocol.header.RpcHeader;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.protocol.response.RpcResponse;
+import io.kenji.courier.provider.common.cache.ProviderChannelCache;
+import io.kenji.courier.provider.common.manager.ProviderConnectionManager;
 import io.kenji.courier.reflect.api.ReflectInvoker;
 import io.kenji.courier.spi.loader.ExtensionLoader;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -40,21 +46,62 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcRequest> protocol) {
         ServerThreadPool.submit(() -> {
-            RpcProtocol<RpcResponse> responseProtocol = handleMessage(protocol);
+            RpcProtocol<RpcResponse> responseProtocol = handleMessage(protocol, ctx.channel());
             ctx.writeAndFlush(responseProtocol).addListener((ChannelFutureListener) future ->
                     log.debug("Send response for request, requestId: {}", responseProtocol.getHeader().getRequestId()));
         });
     }
 
-    private RpcProtocol<RpcResponse> handleMessage(RpcProtocol<RpcRequest> requestRpcProtocol) {
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        // if it is IdleStateEvent
+        if (evt instanceof IdleStateEvent) {
+            Channel channel = ctx.channel();
+            try {
+                log.info("IdleStateEvent is triggered, provider close channel {}", channel);
+                channel.close();
+            } finally {
+                channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            }
+        }
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
+        ProviderChannelCache.remove(ctx.channel());
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        ProviderChannelCache.add(ctx.channel());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        ProviderChannelCache.remove(ctx.channel());
+    }
+
+    private RpcProtocol<RpcResponse> handleMessage(RpcProtocol<RpcRequest> requestRpcProtocol, Channel channel) {
         byte msgType = requestRpcProtocol.getHeader().getMsgType();
         RpcProtocol<RpcResponse> responseRpcProtocol = null;
-        if ((byte) RpcType.HEARTBEAT.getType() == msgType) {
-            responseRpcProtocol = handleHeartBeatMessage(requestRpcProtocol);
+        if ((byte) RpcType.HEARTBEAT_REQUEST_FROM_CONSUMER.getType() == msgType) {
+            responseRpcProtocol = handleHeartBeatRequestFromConsumer(requestRpcProtocol);
+        } else if ((byte) RpcType.HEARTBEAT_RESPONSE_FROM_CONSUMER.getType() == msgType) {
+            handleHeartResponseFromConsumer(requestRpcProtocol, channel);
         } else if ((byte) RpcType.REQUEST.getType() == msgType) {
             responseRpcProtocol = handleRequestMessage(requestRpcProtocol);
         }
         return responseRpcProtocol;
+    }
+
+    //Only print heart beat response
+    private void handleHeartResponseFromConsumer(RpcProtocol<RpcRequest> msg, Channel channel) {
+        log.info("Got heart beat from service provider {}, data: {}", channel.remoteAddress(), GsonUtil.getGson().toJson(msg));
+        ProviderConnectionManager.removeHeartBeatRecord(channel);
     }
 
     private RpcProtocol<RpcResponse> handleRequestMessage(RpcProtocol<RpcRequest> protocol) {
@@ -80,7 +127,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
                 .body(rpcResponse).build();
     }
 
-    private RpcProtocol<RpcResponse> handleHeartBeatMessage(RpcProtocol<RpcRequest> protocol) {
+    private RpcProtocol<RpcResponse> handleHeartBeatRequestFromConsumer(RpcProtocol<RpcRequest> protocol) {
         RpcHeader header = protocol.getHeader();
         RpcRequest requestBody = protocol.getBody();
         log.debug("Received heart beat, requestId: {}, body: {}", header.getRequestId(), requestBody);
@@ -88,6 +135,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
         RpcResponse rpcResponse = new RpcResponse();
         rpcResponse.setAsync(requestBody.getAsync());
         rpcResponse.setOneway(requestBody.getOneway());
+        header.setMsgType((byte) RpcType.HEARTBEAT_RESPONSE_FROM_PROVIDER.getType());
         header.setStatus((byte) RpcStatus.SUCCESS.getCode());
         rpcResponse.setResult(HEART_BEAT_PONG);
         return RpcProtocol.<RpcResponse>builder()
@@ -109,29 +157,13 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
         for (Class<?> parameterType : parameterTypes) {
             log.debug(parameterType.getName());
         }
-//        return invokeMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
         return reflectInvoker.invokeMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
     }
 
-//    private Object invokeMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
-//        return switch (proxy) {
-//            case JDK -> invokeJDKMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
-//            case CGLIB -> invokeCGLIBMethod(serviceBean, serviceBeanClass, methodName, parameterTypes, parameters);
-//            default -> throw new UnsupportedOperationException("Only support invoke method by JDK or CGLIB");
-//        };
-//    }
-//
-//    private Object invokeJDKMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
-//        log.info("Use JDK reflect type invoke method");
-//        Method method = serviceBeanClass.getMethod(methodName, parameterTypes);
-//        method.setAccessible(true);
-//        return method.invoke(serviceBean, parameters);
-//    }
-//
-//    private Object invokeCGLIBMethod(Object serviceBean, Class<?> serviceBeanClass, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
-//        log.info("Use CGLIB reflect type invoke method");
-//        FastClass fastClass = FastClass.create(serviceBeanClass);
-//        FastMethod fastClassMethod = fastClass.getMethod(methodName, parameterTypes);
-//        return fastClassMethod.invoke(serviceBean, parameters);
-//    }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("server caught exception", cause);
+        ProviderChannelCache.remove(ctx.channel());
+        ctx.close();
+    }
 }
