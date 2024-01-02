@@ -2,8 +2,8 @@ package io.kenji.courier.test.consumer.handler;
 
 import io.kenji.courier.annotation.RegisterType;
 import io.kenji.courier.annotation.SerializationType;
-import io.kenji.courier.consumer.common.RpcConsumer;
 import io.kenji.courier.consumer.common.callback.AsyncRpcCallback;
+import io.kenji.courier.consumer.common.consumer.RpcConsumer;
 import io.kenji.courier.consumer.common.future.RpcFuture;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.enumeration.RpcType;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class RpcConsumerHandlerTest {
 
     public static void main(String[] args) throws Exception {
-        RpcConsumer rpcConsumer = RpcConsumer.getInstance(10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
+        RpcConsumer rpcConsumer = RpcConsumer.getInstance(10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS, 2000, 5);
         RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol(), getRegistryService("127.0.0.1:2181", RegisterType.ZOOKEEPER));
         rpcFuture.addCallback(new AsyncRpcCallback() {
             @Override
