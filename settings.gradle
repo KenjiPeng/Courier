@@ -116,4 +116,6 @@ include 'courier-loadbalancer:courier-loadbalancer-consistenthash-zk-enhanced'
 findProject(':courier-loadbalancer:courier-loadbalancer-consistenthash-zk-enhanced')?.name = 'courier-loadbalancer-consistenthash-zk-enhanced'
 include 'courier-loadbalancer:courier-loadbalancer-least-connections'
 findProject(':courier-loadbalancer:courier-loadbalancer-least-connections')?.name = 'courier-loadbalancer-least-connections'
+include 'courier-provider:courier-provider-spring'
+findProject(':courier-provider:courier-provider-spring')?.name = 'courier-provider-spring'
 
