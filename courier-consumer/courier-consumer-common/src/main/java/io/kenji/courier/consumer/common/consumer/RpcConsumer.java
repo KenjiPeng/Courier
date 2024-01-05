@@ -148,7 +148,7 @@ public class RpcConsumer implements Consumer {
 
     private Optional<ServiceMeta> getServiceMetaData(RegistryService registryService, String serviceKey,
                                                      int invokerHashCode) throws InterruptedException {
-        log.info("fetch service meta data");
+        log.info("Try to fetch service meta data by serviceKey: {}",serviceKey);
         int count = 0;
         while (count < maxRetryTime) {
             try {

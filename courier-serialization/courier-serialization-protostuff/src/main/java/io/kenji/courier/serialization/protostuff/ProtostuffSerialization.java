@@ -44,6 +44,7 @@ public class ProtostuffSerialization implements Serialization {
     public <T> byte[] serialize(T obj) {
         log.info("Execute protostuff serialize...");
         if (obj == null) {
+            log.info("serialize object is null");
             throw new SerializerException("serialize object is null");
         }
         Class<T> cls = (Class<T>) obj.getClass();
@@ -62,6 +63,7 @@ public class ProtostuffSerialization implements Serialization {
     public <T> T deserialize(byte[] data, Class<T> cls) {
         log.info("Execute protostuff deserialize...");
         if (data == null) {
+            log.info("deserialize data is null");
             throw new SerializerException("deserialize data is null");
         }
         try {

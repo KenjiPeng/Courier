@@ -1,4 +1,4 @@
-package io.kenji.io.kenji.courier.provider.spring;
+package io.kenji.courier.provider.spring;
 
 import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.annotation.RegisterType;
@@ -9,9 +9,10 @@ import io.kenji.courier.provider.common.server.base.BaseServer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +26,7 @@ import static io.kenji.courier.constants.RpcConstants.SERVICE_PROVIDER_WEIGHT_MI
  * @Date 2024-01-05
  **/
 @Slf4j
-public class RpcSpringServer extends BaseServer implements ApplicationContextInitializer, InitializingBean {
+public class RpcSpringServer extends BaseServer implements ApplicationContextAware, InitializingBean {
 
 
     public RpcSpringServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType, int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
@@ -33,12 +34,7 @@ public class RpcSpringServer extends BaseServer implements ApplicationContextIni
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        this.startNettyServer();
-    }
-
-    @Override
-    public void initialize(ConfigurableApplicationContext applicationContext) {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(RpcProvider.class);
         if (MapUtils.isNotEmpty(serviceBeanMap)) {
             for (Object serviceBean : serviceBeanMap.values()) {
@@ -46,12 +42,18 @@ public class RpcSpringServer extends BaseServer implements ApplicationContextIni
                 ServiceMeta serviceMeta = new ServiceMeta(this.getServiceName(rpcProvider), rpcProvider.version(), host, port, rpcProvider.group(), getWeight(rpcProvider.weight()));
                 handlerMap.put(RpcServiceHelper.buildServiceKey(serviceMeta.serviceName(), serviceMeta.serviceVersion(), serviceMeta.serviceGroup()), serviceBean);
                 try {
+                    log.info("register service metadata: {}", serviceMeta);
                     registryService.register(serviceMeta);
                 } catch (Exception e) {
                     log.error("Hit exception during Rpc server init spring", e);
                 }
             }
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.startNettyServer();
     }
 
     private int getWeight(int weight) {
@@ -74,4 +76,6 @@ public class RpcSpringServer extends BaseServer implements ApplicationContextIni
         }
         return serviceName;
     }
+
+
 }
