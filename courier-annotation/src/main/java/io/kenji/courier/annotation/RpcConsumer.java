@@ -1,5 +1,6 @@
 package io.kenji.courier.annotation;
 
+import io.kenji.courier.constants.RegistryLoadBalanceType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.annotation.ElementType;
@@ -36,7 +37,7 @@ public @interface RpcConsumer {
     /**
      * Type of load balance, zk consistent hash by default
      */
-    String loadBalanceType() default "zkconsistenthash";
+    RegistryLoadBalanceType loadBalanceType() default RegistryLoadBalanceType.ZK_CONSISTENT_HASH_ENHANCE;
 
     /**
      * Type of serialization including protostuff, kryo, json, jdk, hessian2, fst

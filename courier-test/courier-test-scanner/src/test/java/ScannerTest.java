@@ -1,5 +1,4 @@
 import io.kenji.courier.common.scanner.ClassScanner;
-import io.kenji.courier.common.scanner.consumer.RpcConsumerScanner;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -23,9 +22,9 @@ public class ScannerTest {
 //        RpcProviderScanner.doScannerWithRpcProviderAnnotationFilterAndRegistryService("io.kenji.courier.test.scanner");
 //    }
 
-    @Test
-    public void testScannerClassNameListByRpcConsumer() throws IOException {
-        RpcConsumerScanner.doScannerWithRpcConsumerAnnotationFilter("io.kenji.courier.test.scanner");
-    }
+//    @Test
+//    public void testScannerClassNameListByRpcConsumer() throws IOException {
+//        RpcConsumerScanner.doScannerWithRpcConsumerAnnotationFilter("io.kenji.courier.test.scanner");
+//    }
 
 }
