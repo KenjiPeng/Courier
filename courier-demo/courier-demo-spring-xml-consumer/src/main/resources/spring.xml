@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="io.kenji.courier.demo"/>
+
+    <context:property-placeholder location="classpath:courier.properties"/>
+
+    <bean id="rpcClient" class="io.kenji.courier.consumer.RpcClient">
+        <constructor-arg name="registryAddress" value="${registry.registryAddress}"/>
+        <constructor-arg name="registerType" value="${registry.registerType}"/>
+        <constructor-arg name="registryLoadBalanceType" value="${registry.registryLoadBalanceType}"/>
+        <constructor-arg name="serviceVersion" value="${service.version}"/>
+        <constructor-arg name="serviceGroup" value="${service.group}"/>
+        <constructor-arg name="requestTimeoutInMilliseconds" value="${requestTimeoutInMilliseconds}"/>
+        <constructor-arg name="serializationType" value="${serialization.type}"/>
+        <constructor-arg name="proxyType" value="${proxy.type}"/>
+        <constructor-arg name="async" value="${async}"/>
+        <constructor-arg name="oneway" value="${oneway}"/>
+        <constructor-arg name="heartbeatInterval" value="${service.heartbeatInterval}"/>
+        <constructor-arg name="heartbeatIntervalTimeUnit" value="${service.heartbeatInterval.timeUnit}"/>
+        <constructor-arg name="scanNotActiveChannelInterval" value="${service.scanNotActiveChannelInterval}"/>
+        <constructor-arg name="scanNotActiveChannelIntervalTimeUnit" value="${service.scanNotActiveChannelInterval.timeUnit}"/>
+        <constructor-arg name="retryIntervalInMillisecond" value="${consumer.retryIntervalInMillisecond}"/>
+        <constructor-arg name="maxRetryTime" value="${consumer.maxRetryTime}"/>
+    </bean>
+</beans>

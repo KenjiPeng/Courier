@@ -10,15 +10,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    implementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+    implementation 'org.springframework:spring-context:6.1.2'
     implementation project(':courier-consumer:courier-consumer-native')
     implementation project(':courier-consumer:courier-consumer-common')
-    implementation project(':courier-annotation')
-    implementation project(':courier-protocol')
-    implementation project(':courier-constants')
+    implementation 'org.springframework:spring-test:6.1.2'
     implementation project(':courier-demo:courier-demo-api')
-    implementation project(':courier-proxy:courier-proxy-api')
+
 }
 
 test {

@@ -5,7 +5,7 @@ package io.kenji.courier.annotation;
  * @Description
  * @Date 2023-12-06
  **/
-public enum Proxy {
+public enum ProxyType {
 
     JDK,
 

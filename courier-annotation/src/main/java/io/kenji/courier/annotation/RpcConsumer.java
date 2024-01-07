@@ -6,6 +6,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author Kenji Peng
@@ -33,7 +34,7 @@ public @interface RpcConsumer {
     String registerAddress() default "127.0.0.1:2181";
 
     /**
-     *Type of load balance, zk consistent hash by default
+     * Type of load balance, zk consistent hash by default
      */
     String loadBalanceType() default "zkconsistenthash";
 
@@ -45,7 +46,7 @@ public @interface RpcConsumer {
     /**
      * Timeout, 5s by default
      */
-    long timeout() default 5000;
+    long requestTimeoutInMilliseconds() default 5000;
 
     /**
      * Asynchronous execution
@@ -63,10 +64,23 @@ public @interface RpcConsumer {
      * javassist: javassist proxy
      * cglib: cglib proxy
      */
-    Proxy proxy() default Proxy.JDK;
+    ProxyType proxyType() default ProxyType.JDK;
 
     /**
      * Service group
      */
     String group() default "";
+
+
+    int heartbeatInterval() default 30;
+
+    TimeUnit heartbeatIntervalTimeUnit() default TimeUnit.SECONDS;
+
+    int scanNotActiveChannelInterval() default 60;
+
+    TimeUnit scanNotActiveChannelIntervalTimeUnit() default TimeUnit.SECONDS;
+
+    int retryIntervalInMillisecond() default 1000;
+
+    int maxRetryTime() default 3;
 }

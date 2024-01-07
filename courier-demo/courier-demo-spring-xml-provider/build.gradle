@@ -12,7 +12,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    implementation 'org.springframework:spring:5.3.31'
+    implementation 'org.springframework:spring-context:6.1.2'
     implementation project(':courier-common')
     implementation project(':courier-annotation')
     implementation project(':courier-constants')
