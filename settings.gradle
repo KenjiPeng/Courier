@@ -139,4 +139,8 @@ include 'courier-spring-boot-starter:courier-spring-boot-starter-provider'
 findProject(':courier-spring-boot-starter:courier-spring-boot-starter-provider')?.name = 'courier-spring-boot-starter-provider'
 include 'courier-demo:courier-demo-spring-boot-provider'
 findProject(':courier-demo:courier-demo-spring-boot-provider')?.name = 'courier-demo-spring-boot-provider'
+include 'courier-spring-boot-starter:courier-spring-boot-starter-consumer'
+findProject(':courier-spring-boot-starter:courier-spring-boot-starter-consumer')?.name = 'courier-spring-boot-starter-consumer'
+include 'courier-demo:courier-demo-spring-boot-consumer'
+findProject(':courier-demo:courier-demo-spring-boot-consumer')?.name = 'courier-demo-spring-boot-consumer'
 
