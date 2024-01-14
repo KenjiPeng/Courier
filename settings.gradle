@@ -143,4 +143,6 @@ include 'courier-spring-boot-starter:courier-spring-boot-starter-consumer'
 findProject(':courier-spring-boot-starter:courier-spring-boot-starter-consumer')?.name = 'courier-spring-boot-starter-consumer'
 include 'courier-demo:courier-demo-spring-boot-consumer'
 findProject(':courier-demo:courier-demo-spring-boot-consumer')?.name = 'courier-demo-spring-boot-consumer'
+include 'courier-demo:courier-demo-docker-provider'
+findProject(':courier-demo:courier-demo-docker-provider')?.name = 'courier-demo-docker-provider'
 
