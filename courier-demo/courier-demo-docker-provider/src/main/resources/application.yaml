@@ -2,10 +2,10 @@ server:
   port: 8080
 courier:
   provider:
-    serverAddress: 127.0.0.1:20880
+    serverAddress: 192.168.3.122:20880
     registryAddress: 192.168.3.37:2181
     registerType: ZOOKEEPER
-    reflectType: ASM
+    reflectType: JDK
     heartbeatInterval: 10
     heartbeatIntervalTimeUnit: SECONDS
     scanNotActiveChannelInterval: 30

@@ -1,0 +1,5 @@
+FROM openjdk:17-ea-oracle
+VOLUME /tmp
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
+ADD courier-demo-docker-provider-1.0.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar","-Djava.io.tmpdir=/tmp","-Djava.security.egd=file:/dev/./urandom","--add-opens","java.base/java.util=ALL-UNNAMED","--add-opens","java.base/java.lang=ALL-UNNAMED","--add-opens","java.base/java.math=ALL-UNNAMED","--add-opens","java.base/java.util.concurrent=ALL-UNNAMED","--add-opens","java.base/java.net=ALL-UNNAMED","--add-opens","java.base/java.text=ALL-UNNAMED","--add-opens","java.sql/java.sql=ALL-UNNAMED"]

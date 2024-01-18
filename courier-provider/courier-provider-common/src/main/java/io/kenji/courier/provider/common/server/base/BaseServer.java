@@ -125,7 +125,7 @@ public class BaseServer implements Server {
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = bootstrap.bind(host, port).sync();
+            ChannelFuture future = bootstrap.bind("0.0.0.0", port).sync();
             log.info("Server started on {}:{}", host, port);
             future.channel().closeFuture().sync();
         } catch (Exception e) {
