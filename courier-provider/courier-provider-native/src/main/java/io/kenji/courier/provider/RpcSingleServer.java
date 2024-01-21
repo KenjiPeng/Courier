@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit;
  **/
 @Slf4j
 public class RpcSingleServer extends BaseServer {
-    private RpcSingleServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType, String scanPackage, int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
-        super(serverAddress, registryAddress, registerType, reflectType, heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit);
+    private RpcSingleServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType, String scanPackage, int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit,
+                            int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit,
+                            int resultCacheExpire, boolean enableResultCache) {
+        super(serverAddress, registryAddress, registerType, reflectType, heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit, resultCacheExpire, enableResultCache);
         try {
             this.handlerMap = RpcProviderScanner.doScannerWithRpcProviderAnnotationFilterAndRegistryService(this.host, this.port, scanPackage, registryService);
         } catch (Exception e) {
@@ -41,6 +43,10 @@ public class RpcSingleServer extends BaseServer {
         private TimeUnit heartbeatIntervalTimeUnit;
         private int scanNotActiveChannelInterval;
         private TimeUnit scanNotActiveChannelIntervalTimeUnit;
+
+        private int resultCacheExpire;
+
+        private boolean enableResultCache;
 
 
         public RpcSingleServerBuilder() {
@@ -91,9 +97,19 @@ public class RpcSingleServer extends BaseServer {
             return this;
         }
 
+        public RpcSingleServerBuilder resultCacheExpire(int resultCacheExpire) {
+            this.resultCacheExpire = resultCacheExpire;
+            return this;
+        }
+
+        public RpcSingleServerBuilder enableResultCache(boolean enableResultCache) {
+            this.enableResultCache = enableResultCache;
+            return this;
+        }
+
         public RpcSingleServer build() {
-            return new RpcSingleServer(this.serverAddress,this.registryAddress,this.registerType,this.reflectType,this.scanPackage,this.heartbeatInterval,this.heartbeatIntervalTimeUnit,
-                    this.scanNotActiveChannelInterval,this.scanNotActiveChannelIntervalTimeUnit);
+            return new RpcSingleServer(this.serverAddress, this.registryAddress, this.registerType, this.reflectType, this.scanPackage, this.heartbeatInterval, this.heartbeatIntervalTimeUnit,
+                    this.scanNotActiveChannelInterval, this.scanNotActiveChannelIntervalTimeUnit, this.resultCacheExpire, this.enableResultCache);
         }
 
     }

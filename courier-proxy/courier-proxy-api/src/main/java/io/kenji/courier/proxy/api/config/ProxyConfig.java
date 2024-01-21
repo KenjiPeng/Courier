@@ -21,7 +21,11 @@ public record ProxyConfig<T>(Class<T> clazz,
                              SerializationType serializationType,
                              Boolean async,
                              Boolean oneway,
-                             RegistryService registryService) implements Serializable {
+                             RegistryService registryService,
+
+                             boolean enableResultCache,
+
+                             int resultCacheExpire) implements Serializable {
     @Serial
     private static final long serialVersionUID = 8418203627690503695L;
 

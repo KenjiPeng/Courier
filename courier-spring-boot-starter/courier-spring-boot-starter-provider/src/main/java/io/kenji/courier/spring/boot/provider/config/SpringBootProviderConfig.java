@@ -32,20 +32,26 @@ public final class SpringBootProviderConfig {
 
     TimeUnit scanNotActiveChannelIntervalTimeUnit;
 
+    int resultCacheExpire;
+
+    boolean enableResultCache;
+
     public SpringBootProviderConfig(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType,
                                     int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval,
-                                    TimeUnit scanNotActiveChannelIntervalTimeUnit) {
+                                    TimeUnit scanNotActiveChannelIntervalTimeUnit,int resultCacheExpire, boolean enableResultCache) {
         this.serverAddress = serverAddress;
         this.registryAddress = registryAddress;
         this.registerType = registerType;
         this.reflectType = reflectType;
-        if (heartbeatInterval>0){
+        if (heartbeatInterval > 0) {
             this.heartbeatInterval = heartbeatInterval;
         }
         this.heartbeatIntervalTimeUnit = heartbeatIntervalTimeUnit;
-        if (scanNotActiveChannelInterval>0){
+        if (scanNotActiveChannelInterval > 0) {
             this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
         }
         this.scanNotActiveChannelIntervalTimeUnit = scanNotActiveChannelIntervalTimeUnit;
+        this.resultCacheExpire = resultCacheExpire;
+        this.enableResultCache = enableResultCache;
     }
 }

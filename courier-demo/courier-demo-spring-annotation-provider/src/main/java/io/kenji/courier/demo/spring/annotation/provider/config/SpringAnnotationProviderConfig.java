@@ -44,10 +44,14 @@ public class SpringAnnotationProviderConfig {
 
     @Value("${server.scanNotActiveChannelInterval.timeUnit}")
     TimeUnit scanNotActiveChannelIntervalTimeUnit;
+    @Value("${server.cache.expireTime}")
+    int resultCacheExpire;
+    @Value("${server.result.cache.enable}")
+    boolean enableResultCache;
 
     @Bean
     public RpcSpringServer rpcSpringServer() {
         return new RpcSpringServer(serverAddress, registryAddress, registerType, reflectType, heartbeatInterval, heartbeatIntervalTimeUnit,
-                scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit);
+                scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit, resultCacheExpire, enableResultCache);
     }
 }

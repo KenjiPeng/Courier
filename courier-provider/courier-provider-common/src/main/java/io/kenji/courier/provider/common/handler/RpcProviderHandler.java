@@ -1,6 +1,8 @@
 package io.kenji.courier.provider.common.handler;
 
 import io.kenji.courier.annotation.ReflectType;
+import io.kenji.courier.cache.result.CacheResultKey;
+import io.kenji.courier.cache.result.CacheResultManager;
 import io.kenji.courier.common.helper.RpcServiceHelper;
 import io.kenji.courier.common.threadpool.ServerThreadPool;
 import io.kenji.courier.common.utils.GsonUtil;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.kenji.courier.constants.RpcConstants.HEART_BEAT_PONG;
+import static io.kenji.courier.constants.RpcConstants.RPC_CACHE_EXPIRE_TIME;
 
 /**
  * @Author Kenji Peng
@@ -37,10 +40,17 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
 
     private final Map<String, Object> handlerMap;
     private final ReflectInvoker reflectInvoker;
+    private final boolean enableResultCache;
+    private final CacheResultManager<RpcProtocol<RpcResponse>> cacheResultManager;
 
-    public RpcProviderHandler(Map<String, Object> handlerMap, ReflectType reflectType) {
+    public RpcProviderHandler(Map<String, Object> handlerMap, ReflectType reflectType, boolean enableResultCache, int resultCacheExpire) {
         this.handlerMap = handlerMap;
         this.reflectInvoker = ExtensionLoader.getExtension(ReflectInvoker.class, reflectType.name());
+        if (resultCacheExpire <= 0) {
+            resultCacheExpire = RPC_CACHE_EXPIRE_TIME;
+        }
+        this.enableResultCache = enableResultCache;
+        this.cacheResultManager = CacheResultManager.getInstance(resultCacheExpire, enableResultCache);
     }
 
     @Override
@@ -86,14 +96,34 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     }
 
     private RpcProtocol<RpcResponse> handleMessage(RpcProtocol<RpcRequest> requestRpcProtocol, Channel channel) {
-        byte msgType = requestRpcProtocol.getHeader().getMsgType();
+        RpcHeader header = requestRpcProtocol.getHeader();
+        byte msgType = header.getMsgType();
         RpcProtocol<RpcResponse> responseRpcProtocol = null;
         if ((byte) RpcType.HEARTBEAT_REQUEST_FROM_CONSUMER.getType() == msgType) {
             responseRpcProtocol = handleHeartBeatRequestFromConsumer(requestRpcProtocol);
         } else if ((byte) RpcType.HEARTBEAT_RESPONSE_FROM_CONSUMER.getType() == msgType) {
             handleHeartResponseFromConsumer(requestRpcProtocol, channel);
         } else if ((byte) RpcType.REQUEST.getType() == msgType) {
-            responseRpcProtocol = handleRequestMessage(requestRpcProtocol);
+            responseRpcProtocol = handleRequestMessageWithCache(requestRpcProtocol, header);
+        }
+        return responseRpcProtocol;
+    }
+
+    private RpcProtocol<RpcResponse> handleRequestMessageWithCache(RpcProtocol<RpcRequest> requestRpcProtocol, RpcHeader header) {
+        header.setMsgType((byte) RpcType.RESPONSE.getType());
+        if (enableResultCache) return handleRequestMessageFromCache(requestRpcProtocol, header);
+        return handleRequestMessage(requestRpcProtocol, header);
+    }
+
+    private RpcProtocol<RpcResponse> handleRequestMessageFromCache(RpcProtocol<RpcRequest> requestRpcProtocol, RpcHeader header) {
+        RpcRequest body = requestRpcProtocol.getBody();
+        CacheResultKey key = new CacheResultKey(body.getClassName(), body.getMethodName(), body.getParameterTypes(), body.getParameters(), body.getVersion(), body.getGroup());
+        RpcProtocol<RpcResponse> responseRpcProtocol;
+        responseRpcProtocol = cacheResultManager.get(key);
+        if (responseRpcProtocol == null) {
+            responseRpcProtocol = handleRequestMessage(requestRpcProtocol, header);
+            key.setCacheTimeStamp(System.currentTimeMillis());
+            cacheResultManager.put(key, responseRpcProtocol);
         }
         return responseRpcProtocol;
     }
@@ -104,9 +134,7 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
         ProviderConnectionManager.removeHeartBeatRecord(channel);
     }
 
-    private RpcProtocol<RpcResponse> handleRequestMessage(RpcProtocol<RpcRequest> protocol) {
-        RpcHeader header = protocol.getHeader();
-        header.setMsgType((byte) RpcType.RESPONSE.getType());
+    private RpcProtocol<RpcResponse> handleRequestMessage(RpcProtocol<RpcRequest> protocol, RpcHeader header) {
         RpcRequest requestBody = protocol.getBody();
         log.debug("Received request, requestId: {}, body: {}", header.getRequestId(), requestBody);
         // Create RpcResponse

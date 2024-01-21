@@ -1,6 +1,9 @@
 package io.kenji.courier.proxy.api.object;
 
 import io.kenji.courier.annotation.SerializationType;
+import io.kenji.courier.cache.result.CacheResultKey;
+import io.kenji.courier.cache.result.CacheResultManager;
+import io.kenji.courier.constants.RpcConstants;
 import io.kenji.courier.consumer.common.consumer.Consumer;
 import io.kenji.courier.consumer.common.context.RpcContext;
 import io.kenji.courier.consumer.common.future.RpcFuture;
@@ -10,7 +13,6 @@ import io.kenji.courier.protocol.header.RpcHeaderFactory;
 import io.kenji.courier.protocol.request.RpcRequest;
 import io.kenji.courier.proxy.api.async.IAsyncObjectProxy;
 import io.kenji.courier.registry.api.RegistryService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
@@ -25,7 +27,6 @@ import java.util.concurrent.TimeUnit;
  * @Date 2023-12-17
  **/
 @Slf4j
-@AllArgsConstructor
 public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     /**
@@ -51,6 +52,27 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
 
     private RegistryService registryService;
 
+    private boolean enableResultCache;
+
+    private CacheResultManager<Object> cacheResultManager;
+
+    public ObjectProxy(Class<T> clazz, String serviceVersion, String serviceGroup, long timeout, Consumer consumer, SerializationType serializationType,
+                       Boolean async, Boolean oneway, RegistryService registryService, boolean enableResultCache, int resultCacheExpire) {
+        this.clazz = clazz;
+        this.serviceVersion = serviceVersion;
+        this.serviceGroup = serviceGroup;
+        this.timeout = timeout;
+        this.consumer = consumer;
+        this.serializationType = serializationType;
+        this.async = async;
+        this.oneway = oneway;
+        this.registryService = registryService;
+        this.enableResultCache = enableResultCache;
+        if (resultCacheExpire <= 0) {
+            resultCacheExpire = RpcConstants.RPC_CACHE_EXPIRE_TIME;
+        }
+        this.cacheResultManager = CacheResultManager.getInstance(resultCacheExpire, enableResultCache);
+    }
 
     public ObjectProxy(Class<T> clazz) {
         this.clazz = clazz;
@@ -68,6 +90,11 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
                 default -> throw new IllegalStateException(String.valueOf(method));
             };
         }
+        if (enableResultCache) return invokeSendRequestMethodCache(method, args);
+        return invokeSendRequestMethod(method, args);
+    }
+
+    private Object invokeSendRequestMethod(Method method, Object[] args) throws Exception {
         Class<?>[] parameterTypes = method.getParameterTypes();
 
         RpcRequest rpcRequest = RpcRequest.builder()
@@ -96,6 +123,18 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
         }
         RpcFuture rpcFuture = this.consumer.sendRequest(requestRpcProtocol, registryService);
         return rpcFuture == null ? null : timeout > 0 ? rpcFuture.get(timeout, TimeUnit.MILLISECONDS).getResult() : rpcFuture.get().getResult();
+    }
+
+    private Object invokeSendRequestMethodCache(Method method, Object[] args) throws Exception {
+        CacheResultKey cacheResultKey = new CacheResultKey(method.getDeclaringClass().getName(), method.getName(), method.getParameterTypes(), args, this.serviceVersion, this.serviceGroup);
+        Object result;
+        result = cacheResultManager.get(cacheResultKey);
+        if (result == null) {
+            result = this.invokeSendRequestMethod(method, args);
+            cacheResultKey.setCacheTimeStamp(System.currentTimeMillis());
+            if (result != null) cacheResultManager.put(cacheResultKey, result);
+        }
+        return result;
     }
 
     @Override
@@ -134,7 +173,7 @@ public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
             log.debug("Args in object proxy: {}", String.join(",", argList));
         }
         return RpcProtocol.<RpcRequest>builder()
-                .header(RpcHeaderFactory.getRpcProtocolHeader(serializationType,RpcType.REQUEST.getType()))
+                .header(RpcHeaderFactory.getRpcProtocolHeader(serializationType, RpcType.REQUEST.getType()))
                 .body(rpcRequest)
                 .build();
     }

@@ -29,8 +29,10 @@ import static io.kenji.courier.constants.RpcConstants.SERVICE_PROVIDER_WEIGHT_MI
 public class RpcSpringServer extends BaseServer implements ApplicationContextAware, InitializingBean {
 
 
-    public RpcSpringServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType, int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
-        super(serverAddress, registryAddress, registerType, reflectType, heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit);
+    public RpcSpringServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType, int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit,
+                           int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit,
+                           int resultCacheExpire, boolean enableResultCache) {
+        super(serverAddress, registryAddress, registerType, reflectType, heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval, scanNotActiveChannelIntervalTimeUnit, resultCacheExpire, enableResultCache);
     }
 
     @Override

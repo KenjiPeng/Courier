@@ -64,6 +64,7 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
             log.info("Registered RpcConsumerBean {} success", beanName);
         });
     }
+
     private void parseRpcConsumer(Field field) {
         RpcConsumer annotation = AnnotationUtils.getAnnotation(field, RpcConsumer.class);
         if (annotation != null) {
@@ -86,6 +87,10 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
             builder.addPropertyValue("scanNotActiveChannelIntervalTimeUnit", annotation.scanNotActiveChannelIntervalTimeUnit());
             builder.addPropertyValue("retryIntervalInMillisecond", annotation.retryIntervalInMillisecond());
             builder.addPropertyValue("maxRetryTime", annotation.maxRetryTime());
+            builder.addPropertyValue("enableResultCache", annotation.enableResultCache());
+            builder.addPropertyValue("resultCacheExpire", annotation.resultCacheExpire());
+            builder.addPropertyValue("enableDirectServer", annotation.enableDirectServer());
+            builder.addPropertyValue("directServerUrl", annotation.directServerUrl());
             BeanDefinition beanDefinition = builder.getBeanDefinition();
             rpcConsumerBeanDefinitions.put(field.getName(), beanDefinition);
         }

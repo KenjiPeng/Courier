@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ConsumerNativeDemo {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         RpcClient rpcClient = RpcClient.builder()
                 .registryAddress("127.0.0.1:2181")
                 .registerType(RegisterType.ZOOKEEPER)
@@ -33,10 +33,21 @@ public class ConsumerNativeDemo {
                 .heartbeatInterval(10)
                 .heartbeatIntervalTimeUnit(TimeUnit.SECONDS)
                 .scanNotActiveChannelInterval(10)
-                .scanNotActiveChannelIntervalTimeUnit(TimeUnit.SECONDS).build();
+                .scanNotActiveChannelIntervalTimeUnit(TimeUnit.SECONDS)
+                .enableResultCache(true)
+                .resultCacheExpire(30000)
+                .enableDirectServer(true)
+                .directServerUrl("127.0.0.1:27880,127.0.0.1:27800,127.0.0.1:27800")
+                .build();
         DemoService demoService = rpcClient.create(DemoService.class);
-        String result = demoService.hello("Kenji");
-        log.info("Got result: {}", result);
-        rpcClient.shutdown();
+        for (int i = 0; i < 5; i++) {
+            String result = demoService.hello("Kenji");
+            log.info("Got result: {}", result);
+            Thread.sleep(1000);
+        }
+        while (true){
+            Thread.sleep(1000);
+        }
+//        rpcClient.shutdown();
     }
 }

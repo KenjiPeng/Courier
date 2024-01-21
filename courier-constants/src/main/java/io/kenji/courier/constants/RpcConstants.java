@@ -37,4 +37,12 @@ public class RpcConstants {
     public static final String PROVIDER_HANDLER = "RpcProviderHandler";
 
     public static final String CONSUMER_HANDLER = "RpcConsumerHandler";
+
+    public static final int RPC_SCAN_CACHE_TIME_INTERVAL = 1000; // MilliSecond
+
+    public static final int RPC_CACHE_EXPIRE_TIME = 5000; // MilliSecond
+
+    public static final String IP_PORT_SPLIT = ":";
+
+    public static final String RPC_MULTI_DIRECT_SERVER_URL_SEPARATOR = ",";
 }

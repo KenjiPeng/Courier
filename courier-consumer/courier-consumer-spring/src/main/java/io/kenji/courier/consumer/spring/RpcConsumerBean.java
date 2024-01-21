@@ -54,6 +54,14 @@ public class RpcConsumerBean implements FactoryBean<Object> {
 
     private int maxRetryTime = 3;
 
+    private boolean enableResultCache;
+
+    private int resultCacheExpire;
+
+    private boolean enableDirectServer;
+
+    private String directServerUrl;
+
     @Override
     public Object getObject() throws Exception {
         return proxyObject;
@@ -64,7 +72,7 @@ public class RpcConsumerBean implements FactoryBean<Object> {
         return interfaceClass;
     }
 
-    public void init(){
+    public void init() {
         RpcClient rpcClient = RpcClient.builder()
                 .registryAddress(registryAddress)
                 .registerType(registerType)
@@ -82,7 +90,11 @@ public class RpcConsumerBean implements FactoryBean<Object> {
                 .scanNotActiveChannelIntervalTimeUnit(scanNotActiveChannelIntervalTimeUnit)
                 .retryIntervalInMillisecond(retryIntervalInMillisecond)
                 .maxRetryTime(maxRetryTime)
+                .enableResultCache(enableResultCache)
+                .resultCacheExpire(resultCacheExpire)
+                .enableDirectServer(enableDirectServer)
+                .directServerUrl(directServerUrl)
                 .build();
-        this.proxyObject  = rpcClient.create(interfaceClass);
+        this.proxyObject = rpcClient.create(interfaceClass);
     }
 }

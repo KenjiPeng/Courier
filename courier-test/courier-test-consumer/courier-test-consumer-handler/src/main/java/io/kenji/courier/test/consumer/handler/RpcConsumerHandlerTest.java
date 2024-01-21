@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class RpcConsumerHandlerTest {
 
     public static void main(String[] args) throws Exception {
-        RpcConsumer rpcConsumer = RpcConsumer.getInstance(10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS, 2000, 5);
+        RpcConsumer rpcConsumer = RpcConsumer.getInstance(10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS, 2000, 5,false,"127.0.0.1:8081");
         RpcFuture rpcFuture = rpcConsumer.sendRequest(getRpcRequestProtocol(), getRegistryService("127.0.0.1:2181", RegisterType.ZOOKEEPER));
         rpcFuture.addCallback(new AsyncRpcCallback() {
             @Override

@@ -52,4 +52,11 @@ public class SpringBootConsumerConfig {
 
     private int maxRetryTime = 3;
 
+    private boolean enableResultCache;
+
+    private int resultCacheExpire;
+
+    private boolean enableDirectServer;
+
+    private String directServerUrl;
 }

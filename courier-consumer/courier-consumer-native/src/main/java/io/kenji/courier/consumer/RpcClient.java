@@ -59,10 +59,18 @@ public class RpcClient {
 
     private int maxRetryTime;
 
+    private boolean enableResultCache;
+
+    private int resultCacheExpire;
+
+    private boolean enableDirectServer;
+
+    private String directServerUrl;
+
     public RpcClient(String registryAddress, RegisterType registerType, RegistryLoadBalanceType registryLoadBalanceType, String serviceVersion, String serviceGroup,
                      long requestTimeoutInMilliseconds, SerializationType serializationType, ProxyType proxyType, Boolean async, Boolean oneway, int heartbeatInterval,
-                     TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval,
-                     TimeUnit scanNotActiveChannelIntervalTimeUnit, int retryIntervalInMillisecond, int maxRetryTime) {
+                     TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit,
+                     int retryIntervalInMillisecond, int maxRetryTime, boolean enableResultCache, int resultCacheExpire, boolean enableDirectServer, String directServerUrl) {
         this.registryAddress = registryAddress;
         this.registerType = registerType;
         this.registryLoadBalanceType = registryLoadBalanceType;
@@ -79,22 +87,26 @@ public class RpcClient {
         this.scanNotActiveChannelIntervalTimeUnit = scanNotActiveChannelIntervalTimeUnit;
         this.retryIntervalInMillisecond = retryIntervalInMillisecond;
         this.maxRetryTime = maxRetryTime;
+        this.enableResultCache = enableResultCache;
+        this.resultCacheExpire = resultCacheExpire;
+        this.enableDirectServer = enableDirectServer;
+        this.directServerUrl = directServerUrl;
     }
 
     public <T> T create(Class<T> interfaceClass) {
         ProxyFactory proxyFactory = ExtensionLoader.getExtension(ProxyFactory.class, proxyType.name());
         proxyFactory.init(new ProxyConfig<>(interfaceClass, serviceVersion, serviceGroup, requestTimeoutInMilliseconds,
                 RpcConsumer.getInstance(heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval,
-                        scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime),
-                serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType)));
+                        scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime, enableDirectServer, directServerUrl),
+                serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType), enableResultCache, resultCacheExpire));
         return proxyFactory.getProxy(interfaceClass);
     }
 
     public <T> IAsyncObjectProxy createAsync(Class<T> interfaceClass) {
         return new ObjectProxy<>(interfaceClass, serviceVersion, serviceGroup, requestTimeoutInMilliseconds,
                 RpcConsumer.getInstance(heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval,
-                        scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime),
-                serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType));
+                        scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime, enableDirectServer, directServerUrl),
+                serializationType, async, oneway, getRegistryService(registryAddress, registerType, registryLoadBalanceType), enableResultCache, resultCacheExpire);
     }
 
     private RegistryService getRegistryService(String registryAddress, RegisterType registerType, RegistryLoadBalanceType registryLoadBalanceType) {
@@ -113,6 +125,6 @@ public class RpcClient {
 
     public void shutdown() {
         RpcConsumer.getInstance(heartbeatInterval, heartbeatIntervalTimeUnit, scanNotActiveChannelInterval,
-                scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime).close();
+                scanNotActiveChannelIntervalTimeUnit, retryIntervalInMillisecond, maxRetryTime, enableDirectServer, directServerUrl).close();
     }
 }

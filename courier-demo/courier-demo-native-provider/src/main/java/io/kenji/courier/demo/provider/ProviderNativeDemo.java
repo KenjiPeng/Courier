@@ -24,6 +24,8 @@ public class ProviderNativeDemo {
                 .heartbeatIntervalTimeUnit(TimeUnit.SECONDS)
                 .scanNotActiveChannelInterval(10)
                 .scanNotActiveChannelIntervalTimeUnit(TimeUnit.SECONDS)
+                .enableResultCache(false)
+                .resultCacheExpire(3000)
                 .build();
         rpcSingleServer.startNettyServer();
     }

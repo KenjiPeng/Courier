@@ -68,6 +68,11 @@ public class ZookeeperRegistryService implements RegistryService {
     }
 
     @Override
+    public Optional<ServiceMeta> select(List<ServiceMeta> serviceMetaList, int invokerHashCode, String sourceIp) {
+        return Optional.ofNullable(this.serviceEnhanceLoadBalancer.select(serviceMetaList, invokerHashCode, sourceIp));
+    }
+
+    @Override
     public void init(RegistryConfig registryConfig) throws Exception {
         log.info("Init Zookeeper registry service...");
         if (registryConfig.registryLoadBalanceType() != null) {

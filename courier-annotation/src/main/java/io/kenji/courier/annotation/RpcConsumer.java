@@ -1,6 +1,7 @@
 package io.kenji.courier.annotation;
 
 import io.kenji.courier.constants.RegistryLoadBalanceType;
+import io.kenji.courier.constants.RpcConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.annotation.ElementType;
@@ -84,4 +85,12 @@ public @interface RpcConsumer {
     int retryIntervalInMillisecond() default 1000;
 
     int maxRetryTime() default 3;
+
+    boolean enableResultCache() default false;
+
+    int resultCacheExpire() default RpcConstants.RPC_CACHE_EXPIRE_TIME;
+
+    boolean enableDirectServer() default false;
+
+    String directServerUrl() default "";
 }

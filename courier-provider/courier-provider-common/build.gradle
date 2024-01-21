@@ -26,6 +26,7 @@ dependencies {
     implementation project(':courier-reflect:courier-reflect-asm')
     implementation project(':courier-spi')
     implementation project(':courier-constants')
+    implementation project(':courier-cache')
 
 
 }

@@ -59,10 +59,13 @@ public class BaseServer implements Server {
     // scanNotActiveChannelInterval
     protected int scanNotActiveChannelInterval = 60;
     protected TimeUnit scanNotActiveChannelIntervalTimeUnit = TimeUnit.SECONDS;
+    private boolean enableResultCache;
+    private int resultCacheExpire = RPC_CACHE_EXPIRE_TIME;
 
 
     public BaseServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType,
-                      int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit) {
+                      int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit,
+                      int resultCacheExpire, boolean enableResultCache) {
         this.reflectType = reflectType;
         if (!StringUtils.isEmpty(serverAddress)) {
             String[] serverArray = serverAddress.split(":");
@@ -78,6 +81,10 @@ public class BaseServer implements Server {
             this.scanNotActiveChannelInterval = scanNotActiveChannelInterval;
             this.scanNotActiveChannelIntervalTimeUnit = scanNotActiveChannelIntervalTimeUnit;
         }
+        if (resultCacheExpire > 0) {
+            this.resultCacheExpire = resultCacheExpire;
+        }
+        this.enableResultCache = enableResultCache;
     }
 
     private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
@@ -120,7 +127,7 @@ public class BaseServer implements Server {
                                     .addLast(DECODER_HANDLER, new RpcDecoder())
                                     .addLast(ENCODER_HANDLER, new RpcEncoder())
                                     .addLast(IDLE_STATE_HANDLER, new IdleStateHandler(0, 0, heartbeatInterval, heartbeatIntervalTimeUnit))
-                                    .addLast(PROVIDER_HANDLER, new RpcProviderHandler(handlerMap, reflectType));
+                                    .addLast(PROVIDER_HANDLER, new RpcProviderHandler(handlerMap, reflectType, enableResultCache, resultCacheExpire));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

@@ -5,6 +5,7 @@ import io.kenji.courier.registry.api.config.RegistryConfig;
 import io.kenji.courier.spi.annotation.SPI;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,6 +23,8 @@ public interface RegistryService {
     Optional<ServiceMeta> discovery(String serviceName, int invokerHashCode, String sourceIp) throws Exception;
 
     void destroy() throws IOException;
+
+    Optional<ServiceMeta> select(List<ServiceMeta> serviceMetaList, int invokerHashCode, String sourceIp);
 
     default void init(RegistryConfig registryConfig) throws Exception {
     }
