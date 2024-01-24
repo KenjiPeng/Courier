@@ -10,6 +10,7 @@ import io.kenji.courier.registry.api.config.RegistryConfig;
 import io.kenji.courier.spi.annotation.SPIClass;
 import io.kenji.courier.spi.loader.ExtensionLoader;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -19,6 +20,8 @@ import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,6 +73,24 @@ public class ZookeeperRegistryService implements RegistryService {
     @Override
     public Optional<ServiceMeta> select(List<ServiceMeta> serviceMetaList, int invokerHashCode, String sourceIp) {
         return Optional.ofNullable(this.serviceEnhanceLoadBalancer.select(serviceMetaList, invokerHashCode, sourceIp));
+    }
+
+    @Override
+    public List<ServiceMeta> discoveryAll() throws Exception {
+        List<ServiceMeta> serviceMetaList = new ArrayList<>();
+        Collection<String> names = serviceDiscovery.queryForNames();
+        if (CollectionUtils.isEmpty(names)) return serviceMetaList;
+        for (String name : names) {
+            Collection<ServiceInstance<ServiceMeta>> serviceInstances = serviceDiscovery.queryForInstances(name);
+            serviceMetaList.addAll(this.getServiceMetaFromServiceInstance((List<ServiceInstance<ServiceMeta>>)serviceInstances));
+        }
+        return serviceMetaList;
+    }
+
+    private List<ServiceMeta> getServiceMetaFromServiceInstance(List<ServiceInstance<ServiceMeta>> serviceInstances) {
+        List<ServiceMeta> serviceMetaList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(serviceInstances))return serviceMetaList;
+        return serviceInstances.stream().map(ServiceInstance::getPayload).toList();
     }
 
     @Override

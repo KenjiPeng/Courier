@@ -59,4 +59,6 @@ public class SpringBootConsumerConfig {
     private boolean enableDirectServer;
 
     private String directServerUrl;
+
+    private boolean enableDelayConnection;
 }

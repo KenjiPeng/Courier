@@ -37,7 +37,8 @@ public class ConsumerNativeDemo {
                 .enableResultCache(true)
                 .resultCacheExpire(30000)
                 .enableDirectServer(true)
-                .directServerUrl("127.0.0.1:27880,127.0.0.1:27800,127.0.0.1:27800")
+                .directServerUrl("127.0.0.1:27880,127.0.0.1:27880,127.0.0.1:27880")
+                .enableDelayConnection(false)
                 .build();
         DemoService demoService = rpcClient.create(DemoService.class);
         for (int i = 0; i < 5; i++) {

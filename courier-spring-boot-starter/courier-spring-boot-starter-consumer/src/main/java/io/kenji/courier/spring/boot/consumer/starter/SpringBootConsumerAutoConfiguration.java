@@ -47,6 +47,7 @@ public class SpringBootConsumerAutoConfiguration {
                 .resultCacheExpire(springBootConsumerConfig.getResultCacheExpire() <= 0 ? RpcConstants.RPC_CACHE_EXPIRE_TIME : springBootConsumerConfig.getResultCacheExpire())
                 .enableDirectServer(springBootConsumerConfig.isEnableDirectServer())
                 .directServerUrl(StringUtils.isEmpty(springBootConsumerConfig.getDirectServerUrl()) || springBootConsumerConfig.getDirectServerUrl().equals("") ? "" : springBootConsumerConfig.getDirectServerUrl())
+                .enableDelayConnection(springBootConsumerConfig.isEnableDelayConnection())
                 .build();
 
     }

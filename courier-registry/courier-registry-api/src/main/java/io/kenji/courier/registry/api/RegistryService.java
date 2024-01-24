@@ -26,6 +26,8 @@ public interface RegistryService {
 
     Optional<ServiceMeta> select(List<ServiceMeta> serviceMetaList, int invokerHashCode, String sourceIp);
 
+    List<ServiceMeta> discoveryAll() throws Exception;
+
     default void init(RegistryConfig registryConfig) throws Exception {
     }
 

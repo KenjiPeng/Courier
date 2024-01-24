@@ -93,4 +93,6 @@ public @interface RpcConsumer {
     boolean enableDirectServer() default false;
 
     String directServerUrl() default "";
+
+    boolean enableDelayConnection() default false;
 }

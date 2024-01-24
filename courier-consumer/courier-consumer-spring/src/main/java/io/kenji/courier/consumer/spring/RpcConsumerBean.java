@@ -62,6 +62,8 @@ public class RpcConsumerBean implements FactoryBean<Object> {
 
     private String directServerUrl;
 
+    private boolean enableDelayConnection = false;
+
     @Override
     public Object getObject() throws Exception {
         return proxyObject;
@@ -94,6 +96,7 @@ public class RpcConsumerBean implements FactoryBean<Object> {
                 .resultCacheExpire(resultCacheExpire)
                 .enableDirectServer(enableDirectServer)
                 .directServerUrl(directServerUrl)
+                .enableDelayConnection(enableDelayConnection)
                 .build();
         this.proxyObject = rpcClient.create(interfaceClass);
     }
