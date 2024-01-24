@@ -148,4 +148,5 @@ findProject(':courier-demo:courier-demo-docker-provider')?.name = 'courier-demo-
 include 'courier-demo:courier-demo-docker-consumer'
 findProject(':courier-demo:courier-demo-docker-consumer')?.name = 'courier-demo-docker-consumer'
 include 'courier-cache'
+include 'courier-threadpool'
 

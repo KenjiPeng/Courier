@@ -45,4 +45,12 @@ public class RpcConstants {
     public static final String IP_PORT_SPLIT = ":";
 
     public static final String RPC_MULTI_DIRECT_SERVER_URL_SEPARATOR = ",";
+
+    public static final int DEFAULT_CORE_POOL_SIZE = 16;
+
+    public static final int DEFAULT_MAXIMUM_POOL_SIZE = 16;
+
+    public static final int DEFAULT_KEEP_ALIVE_TIME = 600;
+
+    public static final int DEFAULT_QUEUE_CAPACITY = 65536;
 }
