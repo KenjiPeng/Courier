@@ -25,6 +25,7 @@ public class SpringBootProviderAutoConfiguration {
         return new RpcSpringServer(springBootProviderConfig.getServerAddress(), springBootProviderConfig.getRegistryAddress(), springBootProviderConfig.getRegisterType(),
                 springBootProviderConfig.getReflectType(), springBootProviderConfig.getHeartbeatInterval(), springBootProviderConfig.getHeartbeatIntervalTimeUnit(),
                 springBootProviderConfig.getScanNotActiveChannelInterval(), springBootProviderConfig.getScanNotActiveChannelIntervalTimeUnit(),
-                springBootProviderConfig.getResultCacheExpire(), springBootProviderConfig.isEnableResultCache());
+                springBootProviderConfig.getResultCacheExpire(), springBootProviderConfig.getCorePoolSize(), springBootProviderConfig.getMaximumPoolSize(), springBootProviderConfig.isEnableResultCache()
+        );
     }
 }

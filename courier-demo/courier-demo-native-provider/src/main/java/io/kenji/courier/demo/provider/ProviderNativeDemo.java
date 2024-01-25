@@ -26,6 +26,8 @@ public class ProviderNativeDemo {
                 .scanNotActiveChannelIntervalTimeUnit(TimeUnit.SECONDS)
                 .enableResultCache(false)
                 .resultCacheExpire(3000)
+                .corePoolSize(16)
+                .maximumPoolSize(16)
                 .build();
         rpcSingleServer.startNettyServer();
     }

@@ -4,7 +4,6 @@ import io.kenji.courier.annotation.ReflectType;
 import io.kenji.courier.cache.result.CacheResultKey;
 import io.kenji.courier.cache.result.CacheResultManager;
 import io.kenji.courier.common.helper.RpcServiceHelper;
-import io.kenji.courier.common.threadpool.ServerThreadPool;
 import io.kenji.courier.common.utils.GsonUtil;
 import io.kenji.courier.protocol.RpcProtocol;
 import io.kenji.courier.protocol.enumeration.RpcStatus;
@@ -16,6 +15,7 @@ import io.kenji.courier.provider.common.cache.ProviderChannelCache;
 import io.kenji.courier.provider.common.manager.ProviderConnectionManager;
 import io.kenji.courier.reflect.api.ReflectInvoker;
 import io.kenji.courier.spi.loader.ExtensionLoader;
+import io.kenji.courier.threadpool.ConcurrentThreadPool;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -43,7 +43,9 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
     private final boolean enableResultCache;
     private final CacheResultManager<RpcProtocol<RpcResponse>> cacheResultManager;
 
-    public RpcProviderHandler(Map<String, Object> handlerMap, ReflectType reflectType, boolean enableResultCache, int resultCacheExpire) {
+    private final ConcurrentThreadPool concurrentThreadPool;
+
+    public RpcProviderHandler(Map<String, Object> handlerMap, ReflectType reflectType, boolean enableResultCache, int resultCacheExpire, int corePoolSize, int maximumPoolSize) {
         this.handlerMap = handlerMap;
         this.reflectInvoker = ExtensionLoader.getExtension(ReflectInvoker.class, reflectType.name());
         if (resultCacheExpire <= 0) {
@@ -51,11 +53,12 @@ public class RpcProviderHandler extends SimpleChannelInboundHandler<RpcProtocol<
         }
         this.enableResultCache = enableResultCache;
         this.cacheResultManager = CacheResultManager.getInstance(resultCacheExpire, enableResultCache);
+        concurrentThreadPool = ConcurrentThreadPool.getInstance(corePoolSize, maximumPoolSize);
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcProtocol<RpcRequest> protocol) {
-        ServerThreadPool.submit(() -> {
+        concurrentThreadPool.submit(() -> {
             RpcProtocol<RpcResponse> responseProtocol = handleMessage(protocol, ctx.channel());
             ctx.writeAndFlush(responseProtocol).addListener((ChannelFutureListener) future ->
                     log.debug("Send response for request, requestId: {}", responseProtocol.getHeader().getRequestId()));

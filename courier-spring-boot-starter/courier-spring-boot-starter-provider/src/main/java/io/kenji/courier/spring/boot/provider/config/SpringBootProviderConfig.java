@@ -36,9 +36,13 @@ public final class SpringBootProviderConfig {
 
     boolean enableResultCache;
 
+    int corePoolSize;
+
+    int maximumPoolSize;
+
     public SpringBootProviderConfig(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType,
                                     int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval,
-                                    TimeUnit scanNotActiveChannelIntervalTimeUnit,int resultCacheExpire, boolean enableResultCache) {
+                                    TimeUnit scanNotActiveChannelIntervalTimeUnit, int resultCacheExpire, boolean enableResultCache, int corePoolSize, int maximumPoolSize) {
         this.serverAddress = serverAddress;
         this.registryAddress = registryAddress;
         this.registerType = registerType;
@@ -53,5 +57,7 @@ public final class SpringBootProviderConfig {
         this.scanNotActiveChannelIntervalTimeUnit = scanNotActiveChannelIntervalTimeUnit;
         this.resultCacheExpire = resultCacheExpire;
         this.enableResultCache = enableResultCache;
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
     }
 }

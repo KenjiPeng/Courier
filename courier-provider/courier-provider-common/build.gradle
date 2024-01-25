@@ -27,6 +27,7 @@ dependencies {
     implementation project(':courier-spi')
     implementation project(':courier-constants')
     implementation project(':courier-cache')
+    implementation project(':courier-threadpool')
 
 
 }

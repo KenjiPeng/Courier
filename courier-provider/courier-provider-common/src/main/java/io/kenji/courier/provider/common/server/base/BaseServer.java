@@ -62,9 +62,13 @@ public class BaseServer implements Server {
     private boolean enableResultCache;
     private int resultCacheExpire = RPC_CACHE_EXPIRE_TIME;
 
+    private int corePoolSize;
+    private int maximumPoolSize;
+
 
     public BaseServer(String serverAddress, String registryAddress, RegisterType registerType, ReflectType reflectType,
                       int heartbeatInterval, TimeUnit heartbeatIntervalTimeUnit, int scanNotActiveChannelInterval, TimeUnit scanNotActiveChannelIntervalTimeUnit,
+                      int corePoolSize, int maximumPoolSize,
                       int resultCacheExpire, boolean enableResultCache) {
         this.reflectType = reflectType;
         if (!StringUtils.isEmpty(serverAddress)) {
@@ -85,6 +89,8 @@ public class BaseServer implements Server {
             this.resultCacheExpire = resultCacheExpire;
         }
         this.enableResultCache = enableResultCache;
+        this.corePoolSize = corePoolSize;
+        this.maximumPoolSize = maximumPoolSize;
     }
 
     private RegistryService getRegistryService(String registryAddress, RegisterType registerType) {
@@ -127,7 +133,7 @@ public class BaseServer implements Server {
                                     .addLast(DECODER_HANDLER, new RpcDecoder())
                                     .addLast(ENCODER_HANDLER, new RpcEncoder())
                                     .addLast(IDLE_STATE_HANDLER, new IdleStateHandler(0, 0, heartbeatInterval, heartbeatIntervalTimeUnit))
-                                    .addLast(PROVIDER_HANDLER, new RpcProviderHandler(handlerMap, reflectType, enableResultCache, resultCacheExpire));
+                                    .addLast(PROVIDER_HANDLER, new RpcProviderHandler(handlerMap, reflectType, enableResultCache, resultCacheExpire, corePoolSize, maximumPoolSize));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
